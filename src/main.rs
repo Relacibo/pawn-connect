@@ -89,10 +89,10 @@ fn parse_arguments(buffer: &[u8]) -> Result<Arguments, String> {
                 if key == "rated" {
                     rated = Some(true)
                 }
-                key = String::default();
                 if c == ' ' {
                     break;
                 }
+                key = String::default();
             }
             1 => key.push(c),
             2 if c == '+' || c == ' ' => {
