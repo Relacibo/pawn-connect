@@ -1,0 +1,12 @@
+Started listening on port 11492
+
+GET-Params: 
+a -> 53
+Header: 
+Cookie -> _ga=GA1.1.2054249470.1569258475;lila2=fca5e60365831e298ef06ce9e6e00d2b533b334a-sessionId=40vQN1thXxX1Ohb20PMao7&sid=vp44xwtExbptDC3Kn3aycv&bg=dark
+
+Respond: HTTP/1.1 200 OK
+
+<!DOCTYPE html><html><link rel="icon" href="data:;base64,="><script src="https://relacibo.github.io/chess-manage/public/js/index.min.js"></script><script>chessManage.init({"a":"NTM=","Cookie":"X2dhPUdBMS4xLjIwNTQyNDk0NzAuMTU2OTI1ODQ3NTtsaWxhMj1mY2E1ZTYwMzY1ODMxZTI5OGVmMDZjZTllNmUwMGQyYjUzM2IzMzRhLXNlc3Npb25JZD00MHZRTjF0aFh4WDFPaGIyMFBNYW83JnNpZD12cDQ0eHd0RXhicHREQzNLbjNheWN2JmJnPWRhcmsN"});</script><body></body></html>
+
+No GET request!

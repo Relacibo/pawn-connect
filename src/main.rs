@@ -16,20 +16,30 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+extern crate base64;
+
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::str;
 
-const JS_IMPORT_URL: &str = "https://relacibo.github.io/chess-manage/public/js/index.min.js";
-const HOST: &str = "127.0.0.1";
-const PORT: &str = "11492";
+const HOST: &'static str = "127.0.0.1";
+const PORT: &'static str = "11492";
 const BUFFER_SIZE: usize = 150;
 
-struct Arguments {
-    username: String,
-    rated: bool,
-    clock_limit: Option<i32>,
-    clock_increment: Option<i32>,
+struct Request {
+    get_params: Vec<(String, Option<Vec<u8>>)>,
+    header_pairs: Vec<(String, Vec<u8>)>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum ParseState {
+    SkipAfterQMark,
+    ReadGetKey,
+    ReadGetValue,
+    SkipRestFirstLine,
+    ReadHeaderKey,
+    ReadHeaderValue,
+    Finished,
 }
 
 fn main() {
@@ -42,11 +52,8 @@ fn main() {
 }
 
 fn handle_connection(mut stream: TcpStream) {
-    let mut buffer = [0; BUFFER_SIZE];
-    stream.read(&mut buffer).unwrap();
-    stream.flush().unwrap();
-    let args: Arguments = match parse_arguments(&mut buffer) {
-        Ok(args) => args,
+    let req: Request = match parse_request(&stream) {
+        Ok(req) => req,
         Err(e) => {
             println!("{}", e);
             stream.write("HTTP/1.1 404 NOT FOUND\r\n\r\n".as_bytes()).unwrap();
@@ -54,95 +61,148 @@ fn handle_connection(mut stream: TcpStream) {
             return;
         }
     };
-    let response = create_content(&args);
-    println!("{}", response);
+    let response = create_content(req);
+    // Debug
+    println!("Respond: {}", response);
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
 
-fn parse_arguments(buffer: &[u8]) -> Result<Arguments, String> {
-    let len = buffer.len();
-    println!("{}", str::from_utf8(buffer).unwrap());
-    if len < 3 || buffer[0] as char != 'G' || buffer[1] as char != 'E' || buffer[2] as char != 'T' {
+fn parse_request(mut stream: &TcpStream) -> Result<Request, String> {
+    let mut buffer = [0; BUFFER_SIZE];
+    let mut size = stream.read(&mut buffer).map_err(|err| err.to_string())?;
+    if size < 5
+        || buffer[0] as char != 'G'
+        || buffer[1] as char != 'E'
+        || buffer[2] as char != 'T'
+        || buffer[3] as char != ' '
+        || buffer[4] as char != '/'
+    {
         return Err("No GET request!".to_owned());
     }
 
-    let mut index: usize = 4;
+    let mut index: usize = 5;
     let mut c: char;
-    let mut username: Option<String> = None;
-    let mut rated: Option<bool> = None;
-    let mut clock_limit: Option<i32> = None;
-    let mut clock_increment: Option<i32> = None;
-    let mut parse_state: i8 = 0;
-    let mut key: String = String::default();
-    let mut val: String = String::default();
-    while index < len {
-        c = buffer[index] as char;
+    let mut u: u8;
+    let mut parse_state: ParseState = ParseState::SkipAfterQMark;
+    let mut get_params: Vec<(String, Option<Vec<u8>>)> = vec![];
+    let mut header_pairs: Vec<(String, Vec<u8>)> = vec![];
+    let mut key: String = String::new();
+    let mut val: Vec<u8> = vec![];
+    loop {
+        while index < size {
+            u = buffer[index];
+            c = u as char;
+            match parse_state {
+                ParseState::SkipAfterQMark if c == '?' => parse_state = ParseState::ReadGetKey,
+                ParseState::SkipAfterQMark if c == ' ' => {
+                    parse_state = ParseState::SkipRestFirstLine
+                }
+                ParseState::ReadGetKey if c == '=' => parse_state = ParseState::ReadGetValue,
+                ParseState::ReadGetKey if c == '+' || c == ' ' => {
+                    get_params.push((key, None));
+                    key = String::new();
+                    parse_state = if c == ' ' {
+                        val = vec![];
+                        ParseState::SkipRestFirstLine
+                    } else {
+                        ParseState::ReadGetKey
+                    }
+                }
+                ParseState::ReadGetKey => key.push(c),
+                ParseState::ReadGetValue if c == '+' || c == ' ' => {
+                    get_params.push((key, Some(val)));
+                    key = String::new();
+                    val = vec![];
+                    parse_state = if c == '+' {
+                        ParseState::ReadGetKey
+                    } else {
+                        ParseState::SkipRestFirstLine
+                    };
+                }
+                ParseState::ReadGetValue => val.push(u),
+                ParseState::SkipRestFirstLine if c == '\n' => {
+                    parse_state = ParseState::ReadHeaderKey
+                }
+                ParseState::ReadHeaderKey if c == ':' => parse_state = ParseState::ReadHeaderValue,
+                ParseState::ReadHeaderKey if c == ' ' || c == '\n' => {
+                    parse_state = ParseState::Finished;
+                    break;
+                }
+                ParseState::ReadHeaderKey => key.push(c),
+                ParseState::ReadHeaderValue if c == '\n' => {
+                    if key == "Cookie" {
+                        header_pairs.push((key, val));
+                    }
+                    key = String::new();
+                    val = vec![];
+                    parse_state = ParseState::ReadHeaderKey;
+                }
+                ParseState::ReadHeaderValue if c == ' ' => (),
+                ParseState::ReadHeaderValue => val.push(u),
+                _ => (),
+            }
+            index += 1;
+        }
+        if parse_state == ParseState::Finished {
+            stream.flush().unwrap();
+            break;
+        }
+        size = stream.read(&mut buffer).map_err(|err| err.to_string())?;
+        if size == 0 {
+            break;
+        }
+        index = 0;
+    }
+    println!();
+    // debug
+    println!("GET-Params: ");
 
-        if c == '\n' {
-            return Err("No space after get params!".to_owned());
-        }
-        match parse_state {
-            0 if c == '?' => parse_state = 1,
-            1 if c == '=' => parse_state = 2,
-            1 if c == '+' || c == ' ' => {
-                if key == "rated" {
-                    rated = Some(true)
-                }
-                if c == ' ' {
-                    break;
-                }
-                key = String::default();
-            }
-            1 => key.push(c),
-            2 if c == '+' || c == ' ' => {
-                match key.as_str() {
-                    "username" => username = Some(val),
-                    "clock-limit" => {
-                        clock_limit = Some(val.parse::<i32>().map_err(|err| err.to_string())?)
-                    }
-                    "clock-increment" => {
-                        clock_increment = Some(val.parse::<i32>().map_err(|err| err.to_string())?)
-                    }
-                    _ => (),
-                }
-                if c == ' ' {
-                    break;
-                }
-                key = String::default();
-                val = String::default();
-                parse_state = 1;
-            }
-            2 => val.push(c),
-            _ => (),
-        }
-        index += 1;
+    let prinable_params = get_params.clone().into_iter().map(
+        |(k, v)|(k.clone(), 
+            v.map(|x|String::from_utf8(x).unwrap_or("ERROR".to_string())).unwrap_or("<NICHTS>".to_string())
+        )
+    ).collect::<Vec<(String, String)>>();
+
+    let printable_header = header_pairs.clone().into_iter().map(
+        |(k, v)|(k.clone(), 
+            String::from_utf8(v).unwrap_or("<ERROR>".to_string())
+        )
+    ).collect::<Vec<(String, String)>>();
+    for (ref k, ref v) in &prinable_params {
+        println!("{} -> {}", k, v);
     }
-    if username.is_none() {
-        return Err("required get param not set".to_owned());
+    println!("Header: ");
+    for (ref k, ref v) in &printable_header {
+        println!("{} -> {}", k, v);
     }
-    let args = Arguments {
-        username: username.unwrap(),
-        rated: rated.unwrap_or(false),
-        clock_limit: clock_limit,
-        clock_increment: clock_increment,
-    };
-    return Ok(args);
+
+    // debug end
+
+    println!();
+    return Ok(Request {
+        get_params,
+        header_pairs,
+    });
 }
 
-fn create_content(args: &Arguments) -> String {
-    let options_list = [
-        Some(format!("username = {}", args.username)),
-        Some(format!("rated = {}", args.rated.to_string())),
-        args.clock_limit
-            .map(|x| format!("clockLimit = {}", x.to_string())),
-        args.clock_increment
-            .map(|x| format!("clockIncrement = {}", x.to_string())),
-    ]
-    .iter()
-    .flatten()
-    .fold(String::default(), |x, y| format!("{}{},", x, y));
-    let content = format!("<!DOCTYPE html><html><script src=\"{}\"></script><script>chessManage.init({{{}}});</script><body>Hallo Welt</body></html>", JS_IMPORT_URL, options_list);
-    return format!(
-        "HTTP/1.1 200 OK\r\n\r\n{}\r\n", content);
+fn create_content(req: Request) -> String {
+    let iter0 = req
+        .get_params
+        .into_iter()
+        .map(|(key, o_val)| (key, o_val.unwrap_or(vec![116, 114, 117, 101])));
+    let iter1 = req
+            .header_pairs
+                .into_iter();
+
+    let options = iter0.chain(iter1)
+        .map(|(key, val)| format!("\"{}\":\"{}\"", key, base64::encode(val)))
+        .collect::<Vec<String>>()
+        .join(",");
+
+    let content = format!(
+        "HTTP/1.1 200 OK\r\n\r\n<!DOCTYPE html><html><link rel=\"icon\" href=\"data:;base64,=\"><script src=\"https://relacibo.github.io/chess-manage/public/js/index.min.js\"></script><script>chessManage.init({{{}}});</script><body></body></html>\r\n", 
+        options
+    );
+    return content;
 }
