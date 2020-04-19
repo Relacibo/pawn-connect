@@ -1,0 +1,63 @@
+{
+  "name": "pawn-connect",
+  "version": "1.0.0",
+  "description": "p2p tournament management client",
+  "main": "dist/index.js",
+  "repository": "git+https://github.com/Relacibo/pawn-connect.git",
+  "author": {
+    "name": "Reinhard Bronner",
+    "email": "reinhard.bronner@rcbnetwork.de",
+    "url": "https://relacibo.github.io/pawn-connect/public/index.html"
+  },
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "build": "webpack --mode production",
+    "build:dev": "webpack"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "connected-react-router": "^6.8.0",
+    "css-loader": "^3.5.2",
+    "history": "^4.10.1",
+    "http-status-codes": "^1.4.0",
+    "immutable": "^4.0.0-rc.12",
+    "local-storage": "^2.0.0",
+    "module-alias": "^2.2.2",
+    "peerjs": "^1.2.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.0",
+    "react-router": "^5.1.2",
+    "react-router-dom": "^5.1.2",
+    "redux": "^4.0.5",
+    "redux-thunk": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-export-default-from": "^7.8.3",
+    "@babel/plugin-transform-react-constant-elements": "^7.9.0",
+    "@babel/plugin-transform-react-inline-elements": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
+    "@babel/preset-react": "^7.9.4",
+    "@babel/preset-typescript": "^7.9.0",
+    "@types/axios": "^0.14.0",
+    "@types/history": "^4.7.5",
+    "@types/http-status-codes": "^1.2.0",
+    "@types/immutable": "^3.8.7",
+    "@types/local-storage": "^1.4.0",
+    "@types/module-alias": "^2.0.0",
+    "@types/peerjs": "^1.1.0",
+    "@types/react": "^16.9.34",
+    "@types/react-dom": "^16.9.6",
+    "@types/react-redux": "^7.1.7",
+    "@types/react-router": "^5.1.5",
+    "@types/react-router-dom": "^5.1.4",
+    "@types/redux": "^3.6.0",
+    "@types/redux-thunk": "^2.1.0",
+    "source-map-loader": "^0.2.4",
+    "style-loader": "^1.1.4",
+    "ts-loader": "^7.0.0",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  }
+}
