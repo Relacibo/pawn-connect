@@ -18,4 +18,4 @@ const Root = ({ store, history }: Props) => (
   </Provider>
 );
 
-export default hot(Root);
+export default Root;

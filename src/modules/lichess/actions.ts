@@ -1,14 +1,13 @@
 /* eslint-disable no-console */
 import axios from 'axios';
 import { get, set, remove } from 'local-storage';
-import { OK } from 'http-status-codes';
 import {
   GAINED_LICHESS_TOKEN,
   LICHESS_TOKEN_REVOKED,
   LICHESS_LOGIN_ERROR,
   LICHESS_REFRESHED_TOKEN
 } from './enums/actions';
-import { Dispatch, AppThunk, GetState } from '../../root/types';
+import { Dispatch, AppThunk, GetState } from '@root/root/types';
 import OAuth from './types/OAuth';
 
 const serverURL = 'http://localhost:3000';

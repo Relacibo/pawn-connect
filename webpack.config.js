@@ -1,3 +1,6 @@
+const path = require('path');
+const npm_package = require('./package.json')
+
 module.exports = {
   mode: "production",
 
@@ -16,7 +19,10 @@ module.exports = {
         exclude: /node_modules/,
         use: [
           {
-            loader: "ts-loader"
+            loader: "babel-loader",
+            options: {
+              cacheDirectory: true
+            }
           }
         ]
       },
@@ -25,19 +31,26 @@ module.exports = {
         enforce: "pre",
         test: /\.js$/,
         loader: "source-map-loader"
-      }
-    ]
-  },
-
-  module: {
-    rules: [
+      },
       {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
       },
     ],
   },
-  
+  output: {
+    path: path.join(__dirname, 'public')
+  },
+  /**
+   * Determine the array of extensions that should be used to resolve modules.
+   */
+  resolve: {
+    alias: {
+      "@modules": path.resolve(__dirname, 'src/modules'),
+      "@root": path.resolve(__dirname, 'src')
+    },
+    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
+  },
 
   // When importing a module whose path matches one of the following, just
   // assume a corresponding global variable exists and use that instead.

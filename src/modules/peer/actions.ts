@@ -1,5 +1,5 @@
 import Peer, { DataConnection } from 'peerjs';
-import {Map} from 'immutable';
+import { Map } from 'immutable';
 import {
   DISCONNECTED_FROM_PEER,
   CONNECTING_TO_PEER,
@@ -9,7 +9,7 @@ import {
   SEND_MESSAGE,
   SOMEONE_CONNECTED_TO_PEER
 } from './enums/actions';
-import { Dispatch } from '../../root/types';
+import { Dispatch } from '@root/root/types';
 
 let connections: Map<String, DataConnection> = Map();
 
@@ -23,14 +23,14 @@ export function disconnectedFromPeer(key: string, connectionId: string) {
 export function connectingToPeer(key: string) {
   return {
     type: CONNECTING_TO_PEER,
-    payload: {key}
+    payload: { key }
   };
 }
 
 export function connectedToPeer(key: string) {
   return {
     type: CONNECTED_TO_PEER,
-    payload: {key}
+    payload: { key }
   };
 }
 
@@ -78,20 +78,21 @@ export function connectToPeer(key = '') {
       dispatch(connectedToPeer(id));
       conn.on('connection', (dataConnection: DataConnection) => {
         dataConnection.on('data', (data) => {
-        try {
-          const {
-            clientId
-          }: {clientId: string} = JSON
-          .parse(data)
-          connections = connections.set(clientId, dataConnection);
-          dispatch(someoneConnectedToPeer(clientId));
-        } catch (err) {
-          dataConnection.send({code: 'not_valid', err: err.message})
-          return;
-        }
+          try {
+            const {
+              clientId
+            }: { clientId: string } = JSON
+              .parse(data)
+            connections = connections.set(clientId, dataConnection);
+            dispatch(someoneConnectedToPeer(clientId));
+          } catch (err) {
+            dataConnection.send({ code: 'not_valid', err: err.message })
+            return;
+          }
+        });
+      });
     });
-    });
-  });
+  }
 }
 
 export function disconnectFromPeer(key: string) {
