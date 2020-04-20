@@ -10,7 +10,7 @@ import {
 import { Dispatch, AppThunk, GetState } from '@root/root/types';
 import OAuth from './types/OAuth';
 
-const serverURL = 'http://localhost:3000';
+const serverURL = 'http://pawn-connect.org';
 const oathAPIPath = '/api/oauth/lichess';
 const authorizeUri = `${serverURL}${oathAPIPath}/authorize`;
 const refreshUri = `${serverURL}${oathAPIPath}/refresh`;
