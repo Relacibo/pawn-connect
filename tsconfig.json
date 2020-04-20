@@ -5,11 +5,19 @@
     "noImplicitAny": true,
     "module": "commonjs",
     "target": "es6",
+    "declaration": true,
+    "declarationMap": true,
+    "strict": true,
+    /* Additional Checks */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "jsx": "react",
     "baseUrl": "./src",
     "paths": {
-      "@root/*": ["*"],
-      "@modules/*": ["modules/*"]
+      "@root/*": ["./*"],
+      "@modules/*": ["./modules/*"]
     },
     "esModuleInterop": true,
     "resolveJsonModule": true,

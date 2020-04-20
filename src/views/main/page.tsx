@@ -12,9 +12,9 @@ const Home = (props: Props) => {
   return (
     <div className={styles.container} data-tid="container">
       {props.lichessLoginUsername ? (
-        <div onClick={props.logoutFromLichess}>props.lichessLoginUsername</div>
+        <button onClick={props.logoutFromLichess}>props.lichessLoginUsername</button>
       ) : (
-        <div onClick={props.loginToLichess}>Login</div>
+        <a onClick={props.loginToLichess}>Login</a>
       )}
       <h2>Home</h2>
       <div>

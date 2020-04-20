@@ -24,6 +24,8 @@ export function oauth(state: OAuth | null = null, action: Action<string>): OAuth
     case LICHESS_TOKEN_REVOKED:
       return null;
     case LICHESS_REFRESHED_TOKEN:
+      if (state == null)
+        return null;
       return {
         ...state,
         expireTimeStamp: expireTimeStamp(state.expireTimeStamp, action)
