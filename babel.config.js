@@ -21,7 +21,8 @@ module.exports = api => {
       require('@babel/plugin-proposal-json-strings'),
       [require('@babel/plugin-proposal-class-properties'), { loose: true }],
       require('@babel/plugin-transform-react-constant-elements'),
-      require('@babel/plugin-transform-react-inline-elements')
+      require('@babel/plugin-transform-react-inline-elements'),
+      require('@babel/plugin-transform-runtime')
     ]
   };
 };
