@@ -38,8 +38,7 @@ export function loginToLichess() {
   return async (dispatch: Dispatch) => {
     try {
       const response = await axios.get(authorizeUri);
-      const body = response.data;
-      const { authorizationUri } = JSON.parse(body);
+      const { authorizationUri } = response.data;
       window.location.href = authorizationUri;
     } catch (err) {
       console.log(err);
@@ -77,7 +76,7 @@ function refreshOAuth(): AppThunk {
       });
       const currentTime = new Date().getTime();
       // eslint-disable-next-line @typescript-eslint/camelcase
-      const { expires_in } = JSON.parse(response.data);
+      const { expires_in } = response.data;
       const expireTimeStamp: number = currentTime + parseInt(expires_in, 10);
       set<number>('lichess_expireTimeStamp', expireTimeStamp);
       dispatch({
@@ -140,7 +139,7 @@ export function initializeLichess(params: any): AppThunk {
           'get',
           accessToken
         );
-        const { username } = JSON.parse(response.data);
+        const { username } = response.data;
         const expireTimeStamp = currentTime + expiresIn;
 
         set<string>('lichess_username', username);
