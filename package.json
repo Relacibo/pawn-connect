@@ -11,8 +11,7 @@
   },
   "license": "GPL-3.0-only",
   "scripts": {
-    "build": "webpack && copy-static",
-    "copy-static": "node copy-static.js",
+    "build": "webpack && node copy-static.js",
     "dev": "http-server ."
   },
   "dependencies": {

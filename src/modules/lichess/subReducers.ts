@@ -17,7 +17,7 @@ function expireTimeStamp(state: number, action: Action<string>) {
   }
 }
 
-export function oauth(state: OAuth, action: Action<string>) {
+export function oauth(state: OAuth | null = null, action: Action<string>): OAuth | null {
   switch (action.type) {
     case GAINED_LICHESS_TOKEN:
       return { ...state, ...(action as any).payload } as OAuth;
@@ -27,7 +27,7 @@ export function oauth(state: OAuth, action: Action<string>) {
       return {
         ...state,
         expireTimeStamp: expireTimeStamp(state.expireTimeStamp, action)
-      };
+      } as OAuth;
     default:
       return state;
   }
