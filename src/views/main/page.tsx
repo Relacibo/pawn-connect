@@ -30,8 +30,10 @@ const Home = (props: Props) => {
 };
 
 function mapStateToProps(state: ProgramState) {
+  const oauth: OAuth | null = state.lichess.oauth as (OAuth | null);
+  const username = oauth ? oauth.username : '';
   return {
-    lichessLoginUsername: (state.lichess.oauth as OAuth).username
+    lichessLoginUsername: username
   };
 }
 
