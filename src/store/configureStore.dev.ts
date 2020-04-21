@@ -65,14 +65,6 @@ const configureStore = (initialState?: ProgramState) => {
   // Create Store
   const store = createStore(rootReducer, initialState, enhancer);
 
-  if (module.hot) {
-    module.hot.accept(
-      '../root/rootReducer',
-      // eslint-disable-next-line global-require
-      () => store.replaceReducer(require('../root/rootReducer').default)
-    );
-  }
-
   return store;
 };
 

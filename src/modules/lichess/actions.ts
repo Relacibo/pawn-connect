@@ -10,7 +10,7 @@ import {
 import { Dispatch, AppThunk, GetState } from '@root/root/types';
 import OAuth from './types/OAuth';
 
-const serverURL = 'https://pawn-connect.org';
+const serverURL = process.env.SERVER || '';
 const oathAPIPath = '/api/oauth/lichess';
 const authorizeUri = `${serverURL}${oathAPIPath}/authorize`;
 const refreshUri = `${serverURL}${oathAPIPath}/refresh`;
@@ -77,7 +77,7 @@ function refreshOAuth(): AppThunk {
       const currentTime = new Date().getTime();
       // eslint-disable-next-line @typescript-eslint/camelcase
       const { expires_in } = response.data;
-      const expireTimeStamp: number = currentTime + parseInt(expires_in, 10);
+      const expireTimeStamp: number = currentTime + parseInt(expires_in, 10) * 1000;
       set<number>('lichess_expireTimeStamp', expireTimeStamp);
       dispatch({
         type: LICHESS_REFRESHED_TOKEN,
@@ -90,8 +90,9 @@ function refreshOAuth(): AppThunk {
         nextRefresh
       );
     } catch (err) {
-      if (refreshFailCount === 4) {
+      if (refreshFailCount >= 4) {
         dispatch(logoutFromLichess());
+        return;
       }
       console.log(err);
       refreshFailCount += 1;
@@ -120,7 +121,7 @@ async function authorizedLichessAPICall(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function initializeLichess(params: any): AppThunk {
-  return async (dispatch, getState) => {
+  return async dispatch => {
     let oauth: OAuth | null = null;
     const currentTime = new Date().getTime();
     if (params) {
@@ -140,7 +141,7 @@ export function initializeLichess(params: any): AppThunk {
           accessToken
         );
         const { username } = response.data;
-        const expireTimeStamp = currentTime + expiresIn;
+        const expireTimeStamp = currentTime + expiresIn * 1000;
 
         set<string>('lichess_username', username);
         set<string>('lichess_accessToken', accessToken);

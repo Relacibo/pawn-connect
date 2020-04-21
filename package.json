@@ -11,8 +11,8 @@
   },
   "license": "GPL-3.0-only",
   "scripts": {
-    "build": "webpack && node copy-static.js",
-    "dev": "http-server ."
+    "build": "webpack --config webpack.config.prod.js && node copy-static.js",
+    "dev": "node copy-static.js && PORT=3001 webpack-dev-server --config webpack.config.dev.babel.js"
   },
   "dependencies": {
     "@types/redux-logger": "^3.0.7",
@@ -45,6 +45,7 @@
     "@babel/preset-env": "^7.9.5",
     "@babel/preset-react": "^7.9.4",
     "@babel/preset-typescript": "^7.9.0",
+    "@babel/register": "^7.9.0",
     "@babel/runtime": "^7.9.2",
     "@types/axios": "^0.14.0",
     "@types/history": "^4.7.5",
@@ -60,13 +61,15 @@
     "@types/redux": "^3.6.0",
     "@types/redux-thunk": "^2.1.0",
     "@types/webpack": "^4.41.12",
+    "babel-core": "^6.26.3",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.1.0",
-    "http-server": "^0.12.1",
     "source-map-loader": "^0.2.4",
     "style-loader": "^1.1.4",
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3",
+    "webpack-merge": "^4.2.2"
   }
 }

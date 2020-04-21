@@ -5,8 +5,10 @@ import OAuth from './types/OAuth';
 import {
   GAINED_LICHESS_TOKEN,
   LICHESS_TOKEN_REVOKED,
-  LICHESS_REFRESHED_TOKEN
+  LICHESS_REFRESHED_TOKEN,
+  REQUESTED_LICHESS_TOKEN
 } from './enums/actions';
+import { LOGGED_OUT, LOGGING_IN, LOGGED_IN } from './enums/loginState';
 
 function expireTimeStamp(state: number, action: Action<string>) {
   switch (action.type) {
@@ -32,5 +34,17 @@ export function oauth(state: OAuth | null = null, action: Action<string>): OAuth
       } as OAuth;
     default:
       return state;
+  }
+}
+
+export function loginState(state: number = LOGGED_OUT, action: Action<string>) {
+  switch (action.type) {
+    case REQUESTED_LICHESS_TOKEN:
+      return LOGGING_IN;
+    case GAINED_LICHESS_TOKEN:
+      return LOGGED_IN;
+    case LICHESS_TOKEN_REVOKED:
+      return LOGGED_OUT;
+    default: return state;
   }
 }

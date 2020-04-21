@@ -1,12 +1,6 @@
-const path = require('path');
-const npm_package = require('./package.json')
+import path from 'path';
 
-module.exports = {
-  mode: "production",
-
-  // Enable sourcemaps for debugging webpack's output.
-  devtool: "source-map",
-
+export default {
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: [".ts", ".tsx"]
@@ -38,9 +32,6 @@ module.exports = {
       },
     ],
   },
-  output: {
-    path: path.join(__dirname, 'public')
-  },
   /**
    * Determine the array of extensions that should be used to resolve modules.
    */
@@ -60,4 +51,4 @@ module.exports = {
     react: "React",
     "react-dom": "ReactDOM"
   }
-};
+}
