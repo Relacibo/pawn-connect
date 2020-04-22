@@ -5,20 +5,31 @@ import { configureStore, history } from './store/configureStore';
 import './app.global.css';
 import { initialize } from './modules/initialize/actions';
 import { Dispatch } from './root/types';
+import { set } from 'local-storage';
 
-const store = configureStore();
+if ((window as any).copyToMemory) {
+  console.log('copy!');
+  (window as any).initialize = (params: any) => {
+    let input = JSON.stringify(params);
+    set<string>('input', input);
+    location.replace('/');
+  }
+} else {
+  bootstrapApp();
+}
+function bootstrapApp() {
+  console.log('default!');
+  const store = configureStore();
+  const dispatch = store.dispatch as Dispatch;
 
-const AppContainer = React.Fragment;
-const dispatch = store.dispatch as Dispatch;
-
-(window as any).initialize = (params: any) => dispatch(initialize(params));
-
-document.addEventListener('DOMContentLoaded', () =>
-  render(
-    <AppContainer>
-      <Root store={store} history={history} />
-    </AppContainer>,
-    document.getElementById('root')
-  )
-);
-
+  dispatch(initialize());
+  const AppContainer = React.Fragment;
+  document.addEventListener('DOMContentLoaded', () =>
+    render(
+      <AppContainer>
+        <Root store={store} history={history} />
+      </AppContainer>,
+      document.getElementById('root')
+    )
+  );
+}

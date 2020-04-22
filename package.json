@@ -11,11 +11,10 @@
   },
   "license": "GPL-3.0-only",
   "scripts": {
-    "build": "webpack --config webpack.config.prod.js && node copy-static.js",
-    "dev": "node copy-static.js && PORT=3001 webpack-dev-server --config webpack.config.dev.babel.js"
+    "build": "NODE_ENV=production webpack --config webpack.config.prod.babel.js && node copy-static.js",
+    "dev": "NODE_ENV=development node copy-static.js && PORT=3001 webpack-dev-server --config webpack.config.dev.babel.js"
   },
   "dependencies": {
-    "@types/redux-logger": "^3.0.7",
     "axios": "^0.19.2",
     "connected-react-router": "^6.8.0",
     "core-js": "^3.6.5",
@@ -55,6 +54,7 @@
     "@types/peerjs": "^1.1.0",
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.6",
+    "@types/redux-logger": "^3.0.7",
     "@types/react-redux": "^7.1.7",
     "@types/react-router": "^5.1.5",
     "@types/react-router-dom": "^5.1.4",

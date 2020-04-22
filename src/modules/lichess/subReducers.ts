@@ -6,7 +6,7 @@ import {
   GAINED_LICHESS_TOKEN,
   LICHESS_TOKEN_REVOKED,
   LICHESS_REFRESHED_TOKEN,
-  REQUESTED_LICHESS_TOKEN
+  LICHESS_LOGGING_IN
 } from './enums/actions';
 import { LOGGED_OUT, LOGGING_IN, LOGGED_IN } from './enums/loginState';
 
@@ -39,7 +39,7 @@ export function oauth(state: OAuth | null = null, action: Action<string>): OAuth
 
 export function loginState(state: number = LOGGED_OUT, action: Action<string>) {
   switch (action.type) {
-    case REQUESTED_LICHESS_TOKEN:
+    case LICHESS_LOGGING_IN:
       return LOGGING_IN;
     case GAINED_LICHESS_TOKEN:
       return LOGGED_IN;

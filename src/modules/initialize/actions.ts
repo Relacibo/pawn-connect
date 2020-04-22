@@ -3,18 +3,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AppThunk } from '@root/root/types';
 import { initializeLichess } from '@modules/lichess/actions';
-import { history } from '@root/store/configureStore'
+import { get, remove } from 'local-storage';
 
-export function initialize(params: any): AppThunk {
+export function initialize(): AppThunk {
   return dispatch => {
-    const { lichess } = params;
-
-    if (lichess) {
-      history.replace({
-        pathname: '/',
-        search: ''
-      });
-      dispatch(initializeLichess(lichess));
+    let input = get<string>('input');
+    var params: any = {};
+    if (input) {
+      try {
+        params = JSON.parse(input);
+      } catch (err) {
+        console.log(err);
+      }
     }
+    const { lichess } = params;
+    dispatch(initializeLichess(lichess));
+    remove('input');
   };
 }

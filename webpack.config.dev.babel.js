@@ -17,7 +17,7 @@ export default merge.smart(base, {
   },
   devServer: {
     port: process.env.PORT || 3001,
-    contentBase: path.join(__dirname, 'public'),
+    contentBase: path.join(__dirname, 'dev'),
     contentBasePublicPath: '/public/',
     publicPath: '/public'
   }

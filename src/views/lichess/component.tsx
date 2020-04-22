@@ -3,12 +3,14 @@ import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { ProgramState } from '@root/root/types';
 import {loginToLichess, logoutFromLichess} from '@modules/lichess/actions';
-import { LOGGED_IN } from '@root/modules/lichess/enums/loginState';
+import { LOGGED_IN, LOGGING_IN } from '@root/modules/lichess/enums/loginState';
 
 const LichessLogin = (props: Props) => {
   return (<div>
-      { props.lichessLoginUsername ? (
-        <button onClick={props.logoutFromLichess}>{props.lichessLoginUsername}</button>
+      { props.loginState == LOGGED_IN ? (
+        <button onClick={props.logoutFromLichess}>{props.username} | Logout</button>
+      ) : props.loginState == LOGGING_IN ? (
+        <button >Logging in...</button>
       ) : (
         <button onClick={props.loginToLichess}>Login</button>
       ) }
@@ -19,7 +21,8 @@ function mapStateToProps(state: ProgramState) {
   const { oauth, loginState } = state.lichess;
   const username = loginState == LOGGED_IN && oauth ? oauth.username : '';
   return {
-    lichessLoginUsername: username
+    loginState,
+    username
   };
 }
 

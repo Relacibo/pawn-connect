@@ -5,7 +5,8 @@ import {
   GAINED_LICHESS_TOKEN,
   LICHESS_TOKEN_REVOKED,
   LICHESS_LOGIN_ERROR,
-  LICHESS_REFRESHED_TOKEN
+  LICHESS_REFRESHED_TOKEN,
+  LICHESS_LOGGING_IN
 } from './enums/actions';
 import { Dispatch, AppThunk, GetState } from '@root/root/types';
 import OAuth from './types/OAuth';
@@ -76,8 +77,8 @@ function refreshOAuth(): AppThunk {
       });
       const currentTime = new Date().getTime();
       // eslint-disable-next-line @typescript-eslint/camelcase
-      const { expires_in } = response.data;
-      const expireTimeStamp: number = currentTime + parseInt(expires_in, 10) * 1000;
+      const { expires_in: expiresIn } = response.data;
+      const expireTimeStamp: number = currentTime + parseInt(expiresIn, 10) * 1000;
       set<number>('lichess_expireTimeStamp', expireTimeStamp);
       dispatch({
         type: LICHESS_REFRESHED_TOKEN,
@@ -125,6 +126,9 @@ export function initializeLichess(params: any): AppThunk {
     let oauth: OAuth | null = null;
     const currentTime = new Date().getTime();
     if (params) {
+      dispatch({
+        type: LICHESS_LOGGING_IN
+      });
       const {
         access_token: accessToken,
         refresh_token: refreshToken,
