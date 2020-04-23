@@ -1,7 +1,8 @@
 import merge from 'webpack-merge';
-import base from './webpack.config.babel';
+import { TypedCssModulesPlugin } from 'typed-css-modules-webpack-plugin';
 import path from 'path';
 import webpack from 'webpack';
+import base from './webpack.config.babel';
 
 new webpack.DefinePlugin({
   SERVER: JSON.stringify('http://localhost:3000')
@@ -20,6 +21,101 @@ export default merge.smart(base, {
     contentBase: path.join(__dirname, 'dev'),
     contentBasePublicPath: '/public/',
     publicPath: '/public'
-  }
+  },
+  module: {
+    rules: [
+      {
+        test: /\.global\.css$/,
+        use: [
+          {
+            loader: 'style-loader'
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: true
+            }
+          }
+        ]
+      },
+      {
+        test: /^((?!\.global).)*\.css$/,
+        use: [
+          {
+            loader: 'style-loader'
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              modules: {
+                localIdentName: '[name]__[local]__[hash:base64:5]'
+              },
+              sourceMap: true,
+              importLoaders: 1
+            }
+          }
+        ]
+      },
+      // WOFF Font
+      {
+        test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
+        use: {
+          loader: 'url-loader',
+          options: {
+            limit: 10000,
+            mimetype: 'application/font-woff'
+          }
+        }
+      },
+      // WOFF2 Font
+      {
+        test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
+        use: {
+          loader: 'url-loader',
+          options: {
+            limit: 10000,
+            mimetype: 'application/font-woff'
+          }
+        }
+      },
+      // TTF Font
+      {
+        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
+        use: {
+          loader: 'url-loader',
+          options: {
+            limit: 10000,
+            mimetype: 'application/octet-stream'
+          }
+        }
+      },
+      // EOT Font
+      {
+        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
+        use: 'file-loader'
+      },
+      // SVG Font
+      {
+        test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+        use: {
+          loader: 'url-loader',
+          options: {
+            limit: 10000,
+            mimetype: 'image/svg+xml'
+          }
+        }
+      },
+      // Common Image Formats
+      {
+        test: /\.(?:ico|gif|png|jpg|jpeg|webp)$/,
+        use: 'url-loader'
+      }
+    ]
+  },
+  plugins: [
+    new TypedCssModulesPlugin({
+      globPattern: 'src/**/*.css'
+    })
+  ]
 }
 )

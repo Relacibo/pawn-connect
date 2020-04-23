@@ -1,4 +1,4 @@
-import { Dispatch as ReduxDispatch, Store as ReduxStore, Action } from 'redux';
+import { Store as ReduxStore, Action } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import createRootReducer from './rootReducer';
 
