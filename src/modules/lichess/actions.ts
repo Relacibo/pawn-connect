@@ -12,11 +12,11 @@ import { Dispatch, AppThunk, GetState } from '@root/root/types';
 import OAuth from './types/OAuth';
 
 const serverURL = process.env.SERVER_URL || '';
-const port = process.env.SERVER_PORT || 443;
-const portString = port == 80 || port == 443 ? '' : port.toString();
+const port = Number(process.env.SERVER_PORT || 443);
+const portString = port == 80 || port == 443 ? '' : `:${port.toString()}`;
 const oathAPIPath = '/api/oauth/lichess';
-const authorizeUri = `${serverURL}:${port}${oathAPIPath}/authorize`;
-const refreshUri = `${serverURL}:${port}${oathAPIPath}/refresh`;
+const authorizeUri = `${serverURL}${portString}${oathAPIPath}/authorize`;
+const refreshUri = `${serverURL}${portString}${oathAPIPath}/refresh`;
 const lichessBaseURL = 'https://lichess.org';
 
 let refreshTokenObject: NodeJS.Timeout;
