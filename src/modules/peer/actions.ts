@@ -67,7 +67,7 @@ function onConnection(connection: DataConnection, dispatch: Dispatch) {
 
 export function initializePeer(connectionId: string | null = null): AppThunk {
   return dispatch => {
-    peer = connectionId ? new Peer(connectionId, { host, port, path: 'peerjs' }) : new Peer('', { host, port, path: 'peerjs' });
+    peer = connectionId ? new Peer(connectionId, { host, port, secure: false, path: 'peerjs' }) : new Peer('', { host, port, secure: false, path: 'peerjs' });
     peer.on('open', (id) => {
       dispatch({
         type: CREATED_PEER,
