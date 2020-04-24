@@ -1,21 +1,24 @@
 /* eslint-disable react/prefer-stateless-function */
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-import React, { ChangeEvent } from 'react';
+import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Map } from 'immutable';
-import { ProgramState } from '../../root/types';
+import { ProgramState } from '@root/root/types';
 import {
   connectToPeer,
   disconnectFromPeer,
-  sendMessageToPeer
-} from '../../modules/peer/actions';
-import routes from '../../root/routes.json';
+  sendMessageToPeer,
+  initializePeer
+} from '@modules/peer/actions';
+import routes from '@root/root/routes.json';
+import ConnectionStore from '@modules/peer/types/connectionStore';
+import { CONNECTING } from '@root/modules/peer/enums/connectionState';
 
 type State = {
-  key: string;
+  peerId: string;
   message: string;
+  to: string;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,29 +26,28 @@ class PeerConnectionTest extends React.Component<Props, State, any> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      key: '',
-      message: ''
+      peerId: '',
+      message: '',
+      to: ''
     };
   }
 
   onConnect = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (this.state.key === '') {
-      this.props.connectToPeer();
-      return;
-    }
-    this.props.connectToPeer(this.state.key);
+    this.props.connectToPeer(this.state.peerId);
   };
 
   onSend = (e: React.MouseEvent<HTMLButtonElement>) => {
-    this.props.sendMessageToPeer(this.state.key, this.state.message);
+    this.props.sendMessageToPeer(this.state.to, this.state.message);
   };
 
-  onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  onInitialize = (e: React.MouseEvent<HTMLButtonElement>) => {
+    this.props.initializePeer()
+  }
+
+  onInputChange = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
+    const value = (e.target as HTMLInputElement).value;
     this.setState(prevState => {
-      const obj: { [key: string]: string } = {};
-      // eslint-disable-next-line react/no-access-state-in-setstate
-      obj[this.state.key] = (e.target as HTMLInputElement).value;
-      return { ...prevState, ...obj };
+      return { ...prevState, [key]: value };
     });
   };
 
@@ -55,66 +57,87 @@ class PeerConnectionTest extends React.Component<Props, State, any> {
         <Link className="back-link" to={routes.HOME}>
           Back
         </Link>
+        <h2>Peer Connection Playground</h2><div>
+          <button type="button" onClick={this.onInitialize}>
+            Initialize
+          </button>
+          {this.props.peerId && <span style={{marginLeft: '5px'}}>Peer ID: {this.props.peerId}</span>}
+        </div>
         <div>
           <input
             id="key"
             placeholder="connect key"
-            onChange={this.onInputChange}
-            value={this.state.key}
+            onChange={(e) => this.onInputChange(e, 'peerId')}
+            value={this.state.peerId}
           />
           <button type="button" onClick={this.onConnect}>
             Connect
           </button>
         </div>
         <div>
-          <input
-            id="message"
-            placeholder="Message text"
-            onChange={this.onInputChange}
-            value={this.state.message}
-          />
-          <button type="button" onClick={this.onSend}>
-            Send
-          </button>
+          <div>
+            <input
+              id="message"
+              placeholder="Message text"
+              onChange={(e) => this.onInputChange(e, 'message')}
+              value={this.state.message}
+            />
+            <input
+              id="to"
+              placeholder="To"
+              onChange={(e) => this.onInputChange(e, 'to')}
+              value={this.state.to}
+            />
+            <button type="button" onClick={this.onSend}>
+              Send
+              </button>
+          </div>
         </div>
-        <table>
+        <table style={{float: 'left', border: '1px solid white'}}><tbody>
           {this.props.receivedMessages
             .valueSeq()
-            .map(({ id, from, connectionId, payload }) => {
+            .map(({ id, connectionId, payload }) => {
               return (
                 <tr key={id}>
-                  <td>{from}</td>
+                  <td>{id}</td>
                   <td>{connectionId}</td>
                   <td>{payload}</td>
                 </tr>
               );
             })}
-        </table>
-        <table>
-          {this.props.connectionMap
-            .valueSeq()
-            .map(({ connectionId, state }) => {
+        </tbody></table>
+        <table style={{border: '1px solid white'}}><tbody>
+          {this.props.connections.keySeq()
+            .map(key => {
+              const value = this.props.connections.get(key);
               return (
-                <tr key={connectionId}>
-                  <td>{connectionId}</td>
-                  <td>{state}</td>
+                <tr key={key}>
+                  <td>{key}</td>
+                  <td>{value == CONNECTING ? (
+                    <span style={{ color: 'yellow' }}>connecting...</span>
+                  ) : (
+                      <span style={{ color: 'green' }}>connected</span>
+                    )}</td>
                 </tr>
               );
             })}
-        </table>
+        </tbody></table>
       </div>
     );
   }
 }
 
 function mapStateToProps(state: ProgramState) {
+  const connection = (state.peer.connection as ConnectionStore);
   return {
-    connectionMap: state.peer.connectionMap,
+    peerId: connection.peerId,
+    connections: connection.connections,
     receivedMessages: state.peer.messageStore.receivedMessages
   };
 }
 
 const actionCreators = {
+  initializePeer,
   connectToPeer,
   disconnectFromPeer,
   sendMessageToPeer

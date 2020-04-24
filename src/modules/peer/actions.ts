@@ -1,103 +1,125 @@
 import Peer, { DataConnection } from 'peerjs';
-import { Map } from 'immutable';
 import {
   DISCONNECTED_FROM_PEER,
-  CONNECTING_TO_PEER,
-  CONNECTED_TO_PEER,
-  DISCONNECTING_FROM_PEER,
+  CONNECTING_WITH_PEER,
+  CONNECTED_WITH_PEER,
   RECEIVED_MESSAGE,
   SEND_MESSAGE,
-  SOMEONE_CONNECTED_TO_PEER
+  CREATED_PEER,
+  DELETED_PEER
 } from './enums/actions';
-import { Dispatch } from '@root/root/types';
+import { AppThunk, Dispatch } from '@root/root/types';
 
-let connections: Map<String, DataConnection> = Map();
+var peer: Peer | null = null;
+var host: string = process.env.SERVER_URL || '';
+var secure: boolean = false;
+let m = host.match(/^http(s?):\/\/(.+)$/);
+if (m && m.length >= 3) {
+  secure = m[1] != null && m[1] != '';
+  host = m[2] || host;
+}
+const port: number = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 443;
+var connections: Map<string, DataConnection> = new Map()
 
-export function disconnectedFromPeer(key: string, connectionId: string) {
+export function disconnectedFromPeer(peerId: string) {
   return {
     type: DISCONNECTED_FROM_PEER,
-    payload: { connectionId }
-  };
-}
-
-export function connectingToPeer(key: string) {
-  return {
-    type: CONNECTING_TO_PEER,
-    payload: { key }
-  };
-}
-
-export function connectedToPeer(key: string) {
-  return {
-    type: CONNECTED_TO_PEER,
-    payload: { key }
-  };
-}
-
-export function disconnectingFromPeer() {
-  return {
-    type: DISCONNECTING_FROM_PEER
-  };
-}
-
-export function someoneConnectedToPeer(clientId: string) {
-  return {
-    type: SOMEONE_CONNECTED_TO_PEER,
-    payload: {
-      clientId
-    }
-  };
-}
-
-export function sendMessageToPeer(clientId: string, message: string) {
-  return {
-    type: SEND_MESSAGE,
-    payload: { clientId, message }
+    payload: { peerId }
   };
 }
 
 export function receivedMessage(
   from: string,
-  connectionId: string,
   payload: string
 ) {
   return {
     type: RECEIVED_MESSAGE,
-    payload: { from, connectionId, payload }
+    payload: { from, payload }
   };
 }
 
+export function sendMessageToPeer(peerId: string, message: string): AppThunk {
+  return dispatch => {
+    const connection = connections.get(peerId);
+    if (!connection) {
+      return;
+    }
+    connection.send(message);
+    dispatch({
+      type: SEND_MESSAGE,
+      payload: { peerId, message }
+    })
+  };
+}
 
-export function connectToPeer(key = '') {
-  //const peer = new Peer({ key: '' });
-  const peer = new Peer({ key: 'asdasfaeasrz34' });
-  return (dispatch: Dispatch) => {
-    const conn = peer.connect(key);
-    dispatch(connectingToPeer(key));
-    conn.on('open', (id: string) => {
-      dispatch(connectedToPeer(id));
-      conn.on('connection', (dataConnection: DataConnection) => {
-        dataConnection.on('data', (data) => {
-          try {
-            const {
-              clientId
-            }: { clientId: string } = JSON
-              .parse(data)
-            connections = connections.set(clientId, dataConnection);
-            dispatch(someoneConnectedToPeer(clientId));
-          } catch (err) {
-            dataConnection.send({ code: 'not_valid', err: err.message })
-            return;
-          }
-        });
+function onConnection(connection: DataConnection, dispatch: Dispatch) {
+  const { peer: peerId } = connection;
+  connections.set(peerId, connection);
+  dispatch({
+    type: CONNECTED_WITH_PEER,
+    payload: { peerId }
+  });
+  connection.on('data', (message: string) => {
+    dispatch(receivedMessage(peerId, message));
+  });
+  connection.on('close', () => {
+    dispatch(disconnectedFromPeer(peerId))
+  });
+}
+
+export function initializePeer(connectionId: string | null = null): AppThunk {
+  return dispatch => {
+    peer = connectionId ? new Peer(connectionId, { host, port, secure, path: 'peerjs' }) : new Peer('', { host, port, secure, path: 'peerjs' });
+    peer.on('open', (id) => {
+      dispatch({
+        type: CREATED_PEER,
+        payload: { peerId: id }
       });
+    })
+    peer.on('connection', function (connection: DataConnection) {
+      onConnection(connection, dispatch);
     });
   }
 }
 
-export function disconnectFromPeer(key: string) {
-  return {
-    type: DISCONNECT_FROM_PEER,
-    payload: { key }
+export function disconnectPeer(): AppThunk {
+  return dispatch => {
+    peer?.disconnect();
+    dispatch({ type: DELETED_PEER })
+  }
+}
+
+
+export function connectToPeer(peerId: string): AppThunk {
+  return dispatch => {
+    if (!peer) {
+      return;
+    }
+    const connection = peer.connect(peerId, { reliable: true });
+    dispatch({
+      type: CONNECTING_WITH_PEER,
+      payload: { peerId }
+    });
+    connection.on('open', () => {
+      onConnection(connection, dispatch);
+    });
+  };
+
+}
+
+export function disconnectFromPeer(peerId: string): AppThunk {
+  return dispatch => {
+    if (!peer) {
+      return;
+    }
+    const connection = connections.get(peerId);
+    if (!connection)
+      return;
+    connection.close();
+    connections.delete(peerId);
+    dispatch({
+      type: DISCONNECTED_FROM_PEER,
+      payload: { peerId }
+    });
   };
 }

@@ -4,10 +4,6 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import base from './webpack.config.babel';
 import path from 'path';
 
-new webpack.DefinePlugin({
-  SERVER: JSON.stringify('https://pawn-connect.org')
-});
-
 export default merge.smart(base, {
   mode: "production",
   output: {
@@ -111,5 +107,9 @@ export default merge.smart(base, {
     new MiniCssExtractPlugin({
       filename: 'style.css'
     }),
+    new webpack.EnvironmentPlugin({
+      SERVER_URL: 'https://pawn-connect.org',
+      SERVER_PORT: 443
+    })
   ]
 });

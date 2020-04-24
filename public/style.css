@@ -42,7 +42,10 @@
 
 .lichess__login-container__1kBaz {
   display: flex;
+  align-items: center;
   font-size: 20px;
+  min-width: 5rem;
+  height: 3.5rem;
 }
 
 .lichess__login-button__1huPN {
@@ -55,7 +58,7 @@
   min-width: 5rem;
   justify-content: center;
   height: fit-content;
-  border-radius: 2px;
+  border-radius: 4px;
   border: 2px solid white;
 }
 .lichess__login-container__1kBaz > span {
@@ -81,7 +84,7 @@
 }
 .lichess__login-button__1huPN:hover {
   cursor: pointer;
-  background-color: #4f9fb3;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 /*

@@ -47,6 +47,6 @@ export default {
     react: "React",
     "react-dom": "ReactDOM",
     "redux": "Redux",
-    "peerjs": "peerjs"
+    "peerjs": "Peer"
   }
 }

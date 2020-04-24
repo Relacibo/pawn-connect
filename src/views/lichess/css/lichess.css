@@ -35,7 +35,10 @@
 
 .login-container {
   display: flex;
+  align-items: center;
   font-size: 20px;
+  min-width: 5rem;
+  height: 3.5rem;
 }
 
 .login-button {
@@ -48,7 +51,7 @@
   min-width: 5rem;
   justify-content: center;
   height: fit-content;
-  border-radius: 2px;
+  border-radius: 4px;
   border: 2px solid white;
 }
 .login-container > span {
@@ -74,5 +77,5 @@
 }
 .login-button:hover {
   cursor: pointer;
-  background-color: #4f9fb3;
+  background-color: rgba(0, 0, 0, 0.1);
 }

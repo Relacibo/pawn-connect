@@ -1,10 +1,9 @@
-import { List } from 'immutable';
-import User from './user';
-import ConnectionState from './connectionState';
+import { Map } from 'immutable';
+import { DISCONNECTED } from '../enums/connectionState';
 
 export default class ConnectionStore {
   constructor(
-    readonly connState: ConnectionState = new ConnectionState(),
-    readonly users: List<User> = List()
+    readonly peerId: string | null = null,
+    readonly connections: Map<string, number> = Map(),
   ) {}
 }

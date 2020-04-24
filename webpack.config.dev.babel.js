@@ -4,10 +4,6 @@ import path from 'path';
 import webpack from 'webpack';
 import base from './webpack.config.babel';
 
-new webpack.DefinePlugin({
-  SERVER: JSON.stringify('http://localhost:3000')
-});
-
 export default merge.smart(base, {
   mode: 'development',
 
@@ -115,6 +111,10 @@ export default merge.smart(base, {
   plugins: [
     new TypedCssModulesPlugin({
       globPattern: 'src/**/*.css'
+    }),
+    new webpack.EnvironmentPlugin({
+      SERVER_URL: 'http://localhost',
+      SERVER_PORT: 3000
     })
   ]
 }

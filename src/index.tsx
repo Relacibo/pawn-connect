@@ -8,7 +8,6 @@ import { Dispatch } from './root/types';
 import { set } from 'local-storage';
 
 if ((window as any).copyToMemory) {
-  console.log('copy!');
   (window as any).initialize = (params: any) => {
     let input = JSON.stringify(params);
     set<string>('input', input);
@@ -18,7 +17,6 @@ if ((window as any).copyToMemory) {
   bootstrapApp();
 }
 function bootstrapApp() {
-  console.log('default!');
   const store = configureStore();
   const dispatch = store.dispatch as Dispatch;
 

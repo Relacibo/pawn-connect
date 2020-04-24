@@ -11,16 +11,19 @@ import {
 import { Dispatch, AppThunk, GetState } from '@root/root/types';
 import OAuth from './types/OAuth';
 
-const serverURL = process.env.SERVER || '';
+const serverURL = process.env.SERVER_URL || '';
+const port = process.env.SERVER_PORT || 443;
+const portString = port == 80 || port == 443 ? '' : port.toString();
 const oathAPIPath = '/api/oauth/lichess';
-const authorizeUri = `${serverURL}${oathAPIPath}/authorize`;
-const refreshUri = `${serverURL}${oathAPIPath}/refresh`;
+const authorizeUri = `${serverURL}:${port}${oathAPIPath}/authorize`;
+const refreshUri = `${serverURL}:${port}${oathAPIPath}/refresh`;
 const lichessBaseURL = 'https://lichess.org';
 
 let refreshTokenObject: NodeJS.Timeout;
-const WINDOW_BEFORE_REFRESH = 300000;
-const WAIT_AFTER_REFRESH_FAIL = 30000;
+const WINDOW_BEFORE_REFRESH = 900000;
+const WAIT_AFTER_REFRESH_FAIL = 90000;
 let refreshFailCount = 0;
+const MAX_REFRESH_FAIL_COUNT = 9;
 
 export function lichessTokenRevoked() {
   return {
@@ -70,14 +73,16 @@ function refreshOAuth(): AppThunk {
   return async (dispatch, getState) => {
     const { refreshToken } = getState().lichess.oauth as OAuth;
     try {
+      console.log(refreshToken);
       const response = await axios({
         method: 'post',
         url: refreshUri,
-        data: { refresh_token: refreshToken }
+        data: {refresh_token: refreshToken},
       });
       const currentTime = new Date().getTime();
       // eslint-disable-next-line @typescript-eslint/camelcase
       const { expires_in: expiresIn } = response.data;
+      console.log(response.data);
       const expireTimeStamp: number = currentTime + parseInt(expiresIn, 10) * 1000;
       set<number>('lichess_expireTimeStamp', expireTimeStamp);
       dispatch({
@@ -91,7 +96,7 @@ function refreshOAuth(): AppThunk {
         nextRefresh
       );
     } catch (err) {
-      if (refreshFailCount >= 4) {
+      if (refreshFailCount >= MAX_REFRESH_FAIL_COUNT) {
         dispatch(logoutFromLichess());
         return;
       }
@@ -165,6 +170,11 @@ export function initializeLichess(params: any): AppThunk {
           get<string>('lichess_refreshToken'),
           timestamp
         );
+      } else {
+        remove('lichess_username');
+        remove('lichess_accessToken');
+        remove('lichess_refreshToken');
+        remove('lichess_expireTimeStamp');
       }
     }
     if (oauth) {

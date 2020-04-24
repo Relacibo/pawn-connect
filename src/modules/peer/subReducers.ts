@@ -4,47 +4,40 @@ import { Map, List } from 'immutable';
 import {
   CONNECTING,
   CONNECTED,
-  DISCONNECTING,
   DISCONNECTED
 } from './enums/connectionState';
 import {
-  CONNECTING_TO_PEER,
-  CONNECTED_TO_PEER,
+  CONNECTING_WITH_PEER,
+  CONNECTED_WITH_PEER,
   DISCONNECTED_FROM_PEER,
   RECEIVED_MESSAGE,
-  DISCONNECTING_FROM_PEER,
-  SOMEONE_CONNECTED_TO_PEER
+  CREATED_PEER,
+  DELETED_PEER
 } from './enums/actions';
 import Message from './types/message';
 import MessageStore from './types/messageStore';
-import ConnectionState from './types/connectionState';
-import User from './types/user';
-import State from './types/state';
 import ConnectionStore from './types/connectionStore';
 
-function connState(state: ConnectionState, action: Action<string>) {
+function connections(state: Map<string, number> = Map(), action: Action<string>) {
+  let a = action as any;
   switch (action.type) {
     case DISCONNECTED_FROM_PEER:
-      return new ConnectionState(DISCONNECTED);
-    case CONNECTING_TO_PEER: {
-      const { key }: { key: string } = action as any;
-      return new ConnectionState(CONNECTING, key);
-    }
-    case CONNECTED_TO_PEER: {
-      const { key }: { key: string } = action as any;
-      return new ConnectionState(CONNECTED, key);
-    }
-    case DISCONNECTING_FROM_PEER: {
-      const { key } = action as any;
-      return new ConnectionState(DISCONNECTING, key);
-    }
+      return state.delete(a.payload.peerId);
+    case CONNECTING_WITH_PEER:
+      return state.set(a.payload.peerId, CONNECTING);
+    case CONNECTED_WITH_PEER:
+      return state.set(a.payload.peerId, CONNECTED);;
     default:
       return state;
   }
 }
 
-function users(state: List<User>, action: Action<string>) {
+function peerId(state: string | null, action: Action<string>) {
   switch (action.type) {
+    case DELETED_PEER:
+      return null;
+    case CREATED_PEER:
+      return (action as any).payload.peerId;
     default:
       return state;
   }
@@ -56,12 +49,12 @@ export function connection(
 ) {
   switch (action.type) {
     case DISCONNECTED_FROM_PEER:
-    case CONNECTING_TO_PEER:
-    case CONNECTED_TO_PEER:
-    case DISCONNECTING_FROM_PEER:
-      return connState(state.connState, action);
-    case SOMEONE_CONNECTED_TO_PEER:
-      return users(state.users, action);
+    case CONNECTING_WITH_PEER:
+    case CONNECTED_WITH_PEER:
+      return { ...state, connections: connections(state.connections, action) };
+    case CREATED_PEER:
+    case DELETED_PEER:
+      return { ...state, peerId: peerId(state.peerId, action) };
     default:
       return state;
   }
@@ -74,12 +67,11 @@ export function messageStore(
   switch (action.type) {
     case RECEIVED_MESSAGE: {
       const { nextId, receivedMessages } = state;
-      const { data } = action as any;
-      const { from, connectionId, payload } = data as any;
+      const { payload: { from, payload } } = action as any;
       return {
         nextId: nextId + 1,
         receivedMessages: receivedMessages.push(
-          new Message(nextId, from, connectionId, payload)
+          new Message(nextId, from, payload)
         )
       };
     }
