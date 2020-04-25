@@ -12,7 +12,6 @@ import { AppThunk, Dispatch } from '@root/root/types';
 
 var peer: Peer | null = null;
 var host: string = process.env.SERVER_URL || '';
-var secure: boolean = false;
 let m = host.match(/^https?:\/\/(.+)$/);
 if (m && m.length >= 2) {
   host = m[1] || host;
@@ -68,7 +67,7 @@ function onConnection(connection: DataConnection, dispatch: Dispatch) {
 
 export function initializePeer(connectionId: string | null = null): AppThunk {
   return dispatch => {
-    console.log({ host, port, secure, path: 'peerjs' })
+    console.log({ host, port, path: 'peerjs' })
     peer = connectionId ? new Peer(connectionId, { host, port, path: 'peerjs' }) : new Peer({ host, port, path: 'peerjs', debug: 3 });
     peer.on('open', (id) => {
       dispatch({
