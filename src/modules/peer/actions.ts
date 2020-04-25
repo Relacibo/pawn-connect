@@ -61,7 +61,7 @@ function onConnection(connection: DataConnection, dispatch: Dispatch) {
 
 export function initializePeer(connectionId: string | null = null): AppThunk {
   return dispatch => {
-    peer = connectionId ? new Peer(connectionId, { key: 'pawn-connect-HFpFrr5YCpMb+bht' }) : new Peer({ key: 'pawn-connect-HFpFrr5YCpMb+bht' });
+    peer = connectionId ? new Peer(connectionId) : new Peer();
     peer.on('open', (id) => {
       dispatch({
         type: CREATED_PEER,
