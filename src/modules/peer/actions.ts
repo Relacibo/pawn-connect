@@ -13,10 +13,9 @@ import { AppThunk, Dispatch } from '@root/root/types';
 var peer: Peer | null = null;
 var host: string = process.env.SERVER_URL || '';
 var secure: boolean = false;
-let m = host.match(/^http(s?):\/\/(.+)$/);
-if (m && m.length >= 3) {
-  secure = m[1] != null && m[1] != '';
-  host = m[2] || host;
+let m = host.match(/^https?:\/\/(.+)$/);
+if (m && m.length >= 2) {
+  host = m[1] || host;
 }
 const port: number = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 443;
 var connections: Map<string, DataConnection> = new Map()
@@ -70,7 +69,7 @@ function onConnection(connection: DataConnection, dispatch: Dispatch) {
 export function initializePeer(connectionId: string | null = null): AppThunk {
   return dispatch => {
     console.log({ host, port, secure, path: 'peerjs' })
-    peer = connectionId ? new Peer(connectionId, { host, port, secure, path: 'peerjs' }) : new Peer('', { host, port, secure, path: 'peerjs' });
+    peer = connectionId ? new Peer(connectionId, { host, port, path: 'peerjs' }) : new Peer({ host, port, path: 'peerjs', debug: 3 });
     peer.on('open', (id) => {
       dispatch({
         type: CREATED_PEER,
