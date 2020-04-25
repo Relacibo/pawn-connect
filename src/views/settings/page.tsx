@@ -1,11 +1,8 @@
 /* eslint-disable react/destructuring-assignment */
 import React from 'react';
 import { Link } from 'react-router-dom';
-import routes from '../../root/routes.json';
-import SettingsForm, { Props } from './settingsForm';
-
-/* https://redux.js.org/basics/usage-with-react */
-/* https://goshakkk.name/on-forms-react/ */
+import routes from '@root/routes.json';
+import SettingsForm from './settingsForm';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Settings = () => {

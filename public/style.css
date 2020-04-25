@@ -87,6 +87,55 @@
   background-color: rgba(0, 0, 0, 0.1);
 }
 
+.tournament__button__35-2C {
+  display: flex;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  font-size: 5vw;
+  padding: .6em;
+  padding-left: 2em;
+  padding-right: 2em;
+  min-width: 5em;
+  min-height: 1em;
+  justify-content: center;
+  align-items: center;
+  height: fit-content;
+  border: .1em solid white;
+}
+
+@media (min-width: 992px) {
+  .tournament__button__35-2C {
+    font-size: 1rem;
+  }
+}
+
+.tournament__button__35-2C:hover {
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.tournament__button-group__3pm2W {
+  display: table;
+}
+.tournament__button-group__3pm2W .tournament__button__35-2C:not(:last-child) {
+  border-bottom: none;
+}
+
+.tournament__button-group__3pm2W .tournament__button__35-2C:first-child {
+  border-radius: .7em .7em 0 0;
+}
+
+.tournament__button-group__3pm2W .tournament__button__35-2C:last-child {
+  border-radius: 0 0 .7em .7em;
+}
+
+.tournament__tournament-form__3Yc7H {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -70%);
+}
+
 /*
  * @NOTE: Prepend a `~` to css file paths that are in your node_modules
  *        See https://github.com/webpack-contrib/sass-loader#imports

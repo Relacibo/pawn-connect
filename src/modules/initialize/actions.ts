@@ -4,6 +4,7 @@
 import { AppThunk } from '@root/root/types';
 import { initializeLichess } from '@modules/lichess/actions';
 import { get, remove } from 'local-storage';
+import { initializePeer } from '../peer/actions';
 
 export function initialize(): AppThunk {
   return dispatch => {
@@ -18,6 +19,7 @@ export function initialize(): AppThunk {
     }
     const { lichess } = params;
     dispatch(initializeLichess(lichess));
+    dispatch(initializePeer())
     remove('input');
   };
 }

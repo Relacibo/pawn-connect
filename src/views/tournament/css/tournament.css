@@ -1,0 +1,48 @@
+.button {
+  display: flex;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  font-size: 5vw;
+  padding: .6em;
+  padding-left: 2em;
+  padding-right: 2em;
+  min-width: 5em;
+  min-height: 1em;
+  justify-content: center;
+  align-items: center;
+  height: fit-content;
+  border: .1em solid white;
+}
+
+@media (min-width: 992px) {
+  .button {
+    font-size: 1rem;
+  }
+}
+
+.button:hover {
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.button-group {
+  display: table;
+}
+.button-group .button:not(:last-child) {
+  border-bottom: none;
+}
+
+.button-group .button:first-child {
+  border-radius: .7em .7em 0 0;
+}
+
+.button-group .button:last-child {
+  border-radius: 0 0 .7em .7em;
+}
+
+.tournament-form {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -70%);
+}

@@ -59,9 +59,9 @@ function onConnection(connection: DataConnection, dispatch: Dispatch) {
   });
 }
 
-export function initializePeer(connectionId: string | null = null): AppThunk {
+export function initializePeer(): AppThunk {
   return dispatch => {
-    peer = connectionId ? new Peer(connectionId) : new Peer();
+    peer = new Peer();
     peer.on('open', (id) => {
       dispatch({
         type: CREATED_PEER,

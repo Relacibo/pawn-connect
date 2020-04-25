@@ -7,22 +7,20 @@ import { LOGGED_IN, LOGGING_IN } from '@root/modules/lichess/enums/loginState';
 import lichess from './css/lichess.css'
 
 const LichessLogin = (props: Props) => {
-  return (<div>
-    {props.loginState == LOGGED_IN ? (
-      <span className={lichess["login-container"]}>
-        <span className={lichess["icon-lichess"]}> {props.username}</span>
-        <div className={lichess["login-button"]} onClick={props.logoutFromLichess}>logout</div>
-      </span>
-    ) : props.loginState == LOGGING_IN ? (
-      <span className={lichess["login-container"]}>
-        <span className={`${lichess["icon-lichess"]} ${lichess["lichess-spinner"]}`}></span>
-      </span>
-    ) : (
-          <span className={lichess["login-container"]}>
-            <div className={lichess["login-button"]} onClick={props.loginToLichess}><span className={lichess["icon-lichess"]}>login</span></div>
-          </span >
-        )}
-  </div >);
+  return props.loginState == LOGGED_IN ? (
+    <span className={lichess["login-container"]}>
+      <span className={lichess["icon-lichess"]}> {props.username}</span>
+      <div className={lichess["login-button"]} onClick={props.logoutFromLichess}>logout</div>
+    </span>
+  ) : props.loginState == LOGGING_IN ? (
+    <span className={lichess["login-container"]}>
+      <span className={`${lichess["icon-lichess"]} ${lichess["lichess-spinner"]}`}></span>
+    </span>
+  ) : (
+        <span className={lichess["login-container"]}>
+          <div className={lichess["login-button"]} onClick={props.loginToLichess}><span className={lichess["icon-lichess"]}>login</span></div>
+        </span >
+      );
 };
 
 function mapStateToProps(state: ProgramState) {

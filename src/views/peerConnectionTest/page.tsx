@@ -11,7 +11,7 @@ import {
   sendMessageToPeer,
   initializePeer
 } from '@modules/peer/actions';
-import routes from '@root/root/routes.json';
+import routes from '@root/routes.json';
 import ConnectionStore from '@modules/peer/types/connectionStore';
 import { CONNECTING } from '@root/modules/peer/enums/connectionState';
 
@@ -40,10 +40,6 @@ class PeerConnectionTest extends React.Component<Props, State, any> {
     this.props.sendMessageToPeer(this.state.to, this.state.message);
   };
 
-  onInitialize = (e: React.MouseEvent<HTMLButtonElement>) => {
-    this.props.initializePeer()
-  }
-
   onInputChange = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
     const value = (e.target as HTMLInputElement).value;
     this.setState(prevState => {
@@ -58,10 +54,7 @@ class PeerConnectionTest extends React.Component<Props, State, any> {
           Back
         </Link>
         <h2>Peer Connection Playground</h2><div>
-          <button type="button" onClick={this.onInitialize}>
-            Initialize
-          </button>
-          {this.props.peerId && <span style={{marginLeft: '5px'}}>Peer ID: {this.props.peerId}</span>}
+          {this.props.peerId && <span style={{ marginLeft: '5px' }}>Peer ID: {this.props.peerId}</span>}
         </div>
         <div>
           <input
@@ -93,7 +86,7 @@ class PeerConnectionTest extends React.Component<Props, State, any> {
               </button>
           </div>
         </div>
-        <table style={{float: 'left', border: '1px solid white'}}><tbody>
+        <table style={{ float: 'left', border: '1px solid white' }}><tbody>
           {this.props.receivedMessages
             .valueSeq()
             .map(({ id, connectionId, payload }) => {
@@ -106,7 +99,7 @@ class PeerConnectionTest extends React.Component<Props, State, any> {
               );
             })}
         </tbody></table>
-        <table style={{border: '1px solid white'}}><tbody>
+        <table style={{ border: '1px solid white' }}><tbody>
           {this.props.connections.keySeq()
             .map(key => {
               const value = this.props.connections.get(key);
@@ -137,7 +130,6 @@ function mapStateToProps(state: ProgramState) {
 }
 
 const actionCreators = {
-  initializePeer,
   connectToPeer,
   disconnectFromPeer,
   sendMessageToPeer
