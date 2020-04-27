@@ -56,13 +56,12 @@ export function loginToLichess() {
 }
 
 export function logoutFromLichess(): AppThunk {
-  return async (dispatch: Dispatch, getState: GetState) => {
+  return async dispatch => {
     remove('lichess_username');
     remove('lichess_accessToken');
     remove('lichess_refreshToken');
     remove('lichess_expireTimeStamp');
     clearTimeout(refreshTokenObject);
-    const oauth = getState().lichess.oauth as OAuth;
     dispatch({
       type: LICHESS_TOKEN_REVOKED
     });

@@ -1,10 +1,10 @@
 import { Map, List } from 'immutable';
-import ConnectionState from './connectionState';
+import ConnectionStore from './connectionStore';
 import Message from './message';
 
 export default class State {
   constructor(
-    readonly connection: ConnectionState = new ConnectionState(),
+    readonly connection: ConnectionStore = new ConnectionStore(),
     readonly receivedMessages: List<Message> = List()
   ) {}
 }

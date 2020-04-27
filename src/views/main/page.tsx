@@ -15,9 +15,6 @@ const Home = () => {
           <Link to={routes.SETTINGS}>Settings</Link>
         </div>
         <div>
-          <Link to={routes.PEER_CONNECTION_TEST}>Peer</Link>
-        </div>
-        <div>
           <Link to={routes.TOURNAMENT}>Tournament</Link>
         </div>
       </div>

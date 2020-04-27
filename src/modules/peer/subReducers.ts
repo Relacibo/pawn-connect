@@ -10,12 +10,10 @@ import {
   CONNECTING_WITH_PEER,
   CONNECTED_WITH_PEER,
   DISCONNECTED_FROM_PEER,
-  RECEIVED_MESSAGE,
+  RECEIVED_DATA_FROM_PEER,
   CREATED_PEER,
   DELETED_PEER
 } from './enums/actions';
-import Message from './types/message';
-import MessageStore from './types/messageStore';
 import ConnectionStore from './types/connectionStore';
 
 function connections(state: Map<string, number> = Map(), action: Action<string>) {
@@ -55,26 +53,6 @@ export function connection(
     case CREATED_PEER:
     case DELETED_PEER:
       return { ...state, peerId: peerId(state.peerId, action) };
-    default:
-      return state;
-  }
-}
-
-export function messageStore(
-  state: MessageStore = new MessageStore(),
-  action: Action<string>
-) {
-  switch (action.type) {
-    case RECEIVED_MESSAGE: {
-      const { nextId, receivedMessages } = state;
-      const { payload: { from, payload } } = action as any;
-      return {
-        nextId: nextId + 1,
-        receivedMessages: receivedMessages.push(
-          new Message(nextId, from, payload)
-        )
-      };
-    }
     default:
       return state;
   }

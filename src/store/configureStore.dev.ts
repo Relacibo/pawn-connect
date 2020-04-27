@@ -4,7 +4,6 @@ import { createHashHistory } from 'history';
 import { routerMiddleware } from 'connected-react-router';
 import { createLogger } from 'redux-logger';
 import createRootReducer from '../root/rootReducer';
-import actionCreators from '../root/actionCreators';
 import { ProgramState } from '../root/types';
 
 declare global {
@@ -13,11 +12,6 @@ declare global {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       obj: Record<string, any>
     ) => Function;
-  }
-  interface NodeModule {
-    hot?: {
-      accept: (path: string, cb: () => void) => void;
-    };
   }
 }
 
@@ -52,9 +46,9 @@ const configureStore = (initialState?: ProgramState) => {
   /* eslint-disable no-underscore-dangle */
   const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
     ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
-        // Options: http://extension.remotedev.io/docs/API/Arguments.html
-        actionCreators
-      })
+      // Options: http://extension.remotedev.io/docs/API/Arguments.html
+      trace: true, traceLimit: 25
+    })
     : compose;
   /* eslint-enable no-underscore-dangle */
 

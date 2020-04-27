@@ -3,8 +3,8 @@ import {
   DISCONNECTED_FROM_PEER,
   CONNECTING_WITH_PEER,
   CONNECTED_WITH_PEER,
-  RECEIVED_MESSAGE,
-  SEND_MESSAGE,
+  RECEIVED_DATA_FROM_PEER,
+  SEND_DATA_OVER_PEER,
   CREATED_PEER,
   DELETED_PEER
 } from './enums/actions';
@@ -20,26 +20,22 @@ export function disconnectedFromPeer(peerId: string) {
   };
 }
 
-export function receivedMessage(
+export function receivedMessageFromPeer(
   from: string,
-  payload: string
+  data: any
 ) {
   return {
-    type: RECEIVED_MESSAGE,
-    payload: { from, payload }
+    type: RECEIVED_DATA_FROM_PEER,
+    payload: { from, payload: data }
   };
 }
 
-export function sendMessageToPeer(peerId: string, message: string): AppThunk {
+export function sendDataOverPeer(peerId: string, data: any): AppThunk {
   return dispatch => {
-    const connection = connections.get(peerId);
-    if (!connection) {
-      return;
-    }
-    connection.send(message);
+    connections.get(peerId)?.send(data);
     dispatch({
-      type: SEND_MESSAGE,
-      payload: { peerId, message }
+      type: SEND_DATA_OVER_PEER,
+      payload: { peerId, message: data }
     })
   };
 }
@@ -52,32 +48,25 @@ function onConnection(connection: DataConnection, dispatch: Dispatch) {
     payload: { peerId }
   });
   connection.on('data', (message: string) => {
-    dispatch(receivedMessage(peerId, message));
+    dispatch(receivedMessageFromPeer(peerId, message));
   });
   connection.on('close', () => {
     dispatch(disconnectedFromPeer(peerId))
   });
 }
 
-export function initializePeer(): AppThunk {
+export function connectPeer(wantedId?: string): AppThunk {
   return dispatch => {
-    peer = new Peer();
-    peer.on('open', (id) => {
+    peer = wantedId ? new Peer(wantedId) : new Peer();
+    peer.on('open', (peerId) => {
       dispatch({
         type: CREATED_PEER,
-        payload: { peerId: id }
+        payload: { peerId }
       });
     })
     peer.on('connection', function (connection: DataConnection) {
       onConnection(connection, dispatch);
     });
-  }
-}
-
-export function disconnectPeer(): AppThunk {
-  return dispatch => {
-    peer?.disconnect();
-    dispatch({ type: DELETED_PEER })
   }
 }
 
@@ -99,19 +88,10 @@ export function connectToPeer(peerId: string): AppThunk {
 
 }
 
-export function disconnectFromPeer(peerId: string): AppThunk {
+export function disconnectPeer(): AppThunk {
   return dispatch => {
-    if (!peer) {
-      return;
-    }
-    const connection = connections.get(peerId);
-    if (!connection)
-      return;
-    connection.close();
-    connections.delete(peerId);
-    dispatch({
-      type: DISCONNECTED_FROM_PEER,
-      payload: { peerId }
-    });
-  };
+    peer?.destroy();
+    connections = new Map();
+    dispatch({ type: DELETED_PEER })
+  }
 }

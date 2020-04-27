@@ -5,14 +5,14 @@ import { configureStore, history } from './store/configureStore';
 import './app.global.css';
 import { initialize } from './modules/initialize/actions';
 import { Dispatch } from './root/types';
-import { set } from 'local-storage';
+import * as ls from 'local-storage';
 
-if ((window as any).copyToMemory) {
-  (window as any).initialize = (params: any) => {
-    let input = JSON.stringify(params);
-    set<string>('input', input);
-    location.replace('/');
+if (location.pathname.startsWith('/api')) {
+  const { params } = (window as any);
+  if (params) {
+    ls.set<any>('params', params);
   }
+  location.replace('/');
 } else {
   bootstrapApp();
 }
