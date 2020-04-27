@@ -1,5 +1,4 @@
 import { Map } from 'immutable';
-import { DISCONNECTED } from '../enums/connectionState';
 
 export default class ConnectionStore {
   constructor(
