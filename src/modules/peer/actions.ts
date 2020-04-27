@@ -20,7 +20,7 @@ export function disconnectedFromPeer(peerId: string) {
   };
 }
 
-export function receivedMessageFromPeer(
+export function receivedDataFromPeer(
   from: string,
   data: any
 ) {
@@ -48,7 +48,7 @@ function onConnection(connection: DataConnection, dispatch: Dispatch) {
     payload: { peerId }
   });
   connection.on('data', (message: string) => {
-    dispatch(receivedMessageFromPeer(peerId, message));
+    dispatch(receivedDataFromPeer(peerId, message));
   });
   connection.on('close', () => {
     dispatch(disconnectedFromPeer(peerId))
