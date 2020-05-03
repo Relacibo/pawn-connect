@@ -2,7 +2,7 @@ import * as React from 'react';
 import { render } from 'react-dom';
 import Root from './root/RootView';
 import { configureStore, history } from './store/configureStore';
-import './app.global.css';
+import './views/app.global.css';
 import { initialize } from './modules/initialize/actions';
 import { Dispatch } from './root/types';
 import * as ls from 'local-storage';

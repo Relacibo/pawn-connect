@@ -61,6 +61,7 @@
   border-radius: 4px;
   border: 2px solid white;
 }
+
 .lichess__login-container__1kBaz > span {
   display: inline-flex;
   align-items: center;
@@ -87,7 +88,7 @@
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-.tournament__button__35-2C {
+.playerPool__button__ra-az {
   display: flex;
   flex-wrap: nowrap;
   white-space: nowrap;
@@ -96,7 +97,7 @@
   padding-left: 2em;
   padding-right: 2em;
   min-width: 5em;
-  min-height: 1em;
+  min-height: 1.5em;
   justify-content: center;
   align-items: center;
   height: fit-content;
@@ -104,32 +105,32 @@
 }
 
 @media (min-width: 992px) {
-  .tournament__button__35-2C {
+  .playerPool__button__ra-az {
     font-size: 1rem;
   }
 }
 
-.tournament__button__35-2C:hover {
+.playerPool__button__ra-az:hover {
   cursor: pointer;
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-.tournament__button-group__3pm2W {
+.playerPool__button-group__14HZS {
   display: table;
 }
-.tournament__button-group__3pm2W .tournament__button__35-2C:not(:last-child) {
+.playerPool__button-group__14HZS .playerPool__button__ra-az:not(:last-child) {
   border-bottom: none;
 }
 
-.tournament__button-group__3pm2W .tournament__button__35-2C:first-child {
-  border-radius: .7em .7em 0 0;
+.playerPool__button-group__14HZS .playerPool__button__ra-az:first-child {
+  border-radius: .5em .5em 0 0;
 }
 
-.tournament__button-group__3pm2W .tournament__button__35-2C:last-child {
-  border-radius: 0 0 .7em .7em;
+.playerPool__button-group__14HZS .playerPool__button__ra-az:last-child {
+  border-radius: 0 0 .5em .5em;
 }
 
-.tournament__tournament-form__3Yc7H {
+.playerPool__player-pool-form__1qho_ {
   position: absolute;
   left: 50%;
   top: 50%;

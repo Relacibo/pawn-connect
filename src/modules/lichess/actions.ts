@@ -17,7 +17,7 @@ const portString = port == 80 || port == 443 ? '' : `:${port.toString()}`;
 const oathAPIPath = '/api/oauth/lichess';
 const authorizeUri = `${serverURL}${portString}${oathAPIPath}/authorize`;
 const refreshUri = `${serverURL}${portString}${oathAPIPath}/refresh`;
-const lichessBaseURL = 'https://lichess.org';
+const lichessBaseURL = process.env.NODE_ENV == 'development' ? 'https://lichess.dev' : 'https://lichess.org';
 
 let refreshTokenObject: NodeJS.Timeout;
 const WINDOW_BEFORE_REFRESH = 900000;

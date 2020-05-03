@@ -15,7 +15,7 @@ const Home = () => {
           <Link to={routes.SETTINGS}>Settings</Link>
         </div>
         <div>
-          <Link to={routes.TOURNAMENT}>Tournament</Link>
+          <Link to={routes.PLAYER_POOL}>Player pool</Link>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { AppThunk } from "@root/root/types";
 import { SWITCH_VIEW } from "./enums/actions";
-import { HOST_TOURNAMENT_FORM, CONNECT_TO_TOURNAMENT_FORM } from "./enums/views";
+import { HOST_PLAYER_POOL_FORM, CONNECT_TO_PLAYER_POOL_FORM } from "./enums/views";
 import { routerActions } from "connected-react-router";
 import { sendDataOverPeer } from "../peer/actions";
 
@@ -19,31 +19,31 @@ export function sendPeerMessage(peerId: string, message: PeerMessage): AppThunk 
   return dispatch => dispatch(sendDataOverPeer(peerId, message));
 }
 
-export function hostTournament(): AppThunk {
+export function hostPlayerPool(): AppThunk {
   return (dispatch, getState) => {
-    if (getState().tournament.conditionsMet) {
+    if (getState().playerPool.conditionsMet) {
       dispatch(routerActions.replace('/'));
       return;
     }
     dispatch({
       type: SWITCH_VIEW,
       payload: {
-        viewId: HOST_TOURNAMENT_FORM
+        viewId: HOST_PLAYER_POOL_FORM
       }
     })
   }
 }
 
-export function connectToTournament(): AppThunk {
+export function connectToPlayer(): AppThunk {
   return (dispatch, getState) => {
-    if (getState().tournament.conditionsMet) {
+    if (getState().playerPool.conditionsMet) {
       dispatch(routerActions.replace('/'));
       return;
     }
     dispatch({
       type: SWITCH_VIEW,
       payload: {
-        viewId: CONNECT_TO_TOURNAMENT_FORM
+        viewId: CONNECT_TO_PLAYER_POOL_FORM
       }
     })
   }

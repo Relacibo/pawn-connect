@@ -1,8 +1,8 @@
 import { Action } from "redux";
 import { UIState } from "./types/UIState";
-import { SWITCH_VIEW, CREATE_TOURNAMENT } from "./enums/actions";
+import { SWITCH_VIEW, CREATE_PLAYER_POOL } from "./enums/actions";
 import { CREATED_PEER, DELETED_PEER, RECEIVED_DATA_FROM_PEER } from "../peer/enums/actions";
-import { TournamentState } from "./types/TournamentState";
+import { PlayerPoolState } from "./types/PlayerPoolState";
 
 export function conditionsMet(state: boolean = false, action: Action<string>) {
   switch (action.type) {
@@ -36,10 +36,10 @@ export function uiState(state: UIState = new UIState(), action: Action<string>) 
   }
 }
 
-export function tournamentState(state: TournamentState | null = null, action: Action<string>) {
+export function playerPoolState(state: PlayerPoolState | null = null, action: Action<string>) {
   switch (action.type) {
-    case CREATE_TOURNAMENT: {
-      const newState = (action as any).payload as TournamentState;
+    case CREATE_PLAYER_POOL: {
+      const newState = (action as any).payload as PlayerPoolState;
       return { ...newState };
     }
     case RECEIVED_DATA_FROM_PEER: {
