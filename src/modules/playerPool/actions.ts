@@ -1,8 +1,6 @@
 import { AppThunk } from "@root/root/types";
-import { SWITCH_VIEW } from "./enums/actions";
-import { HOST_PLAYER_POOL_FORM, CONNECT_TO_PLAYER_POOL_FORM } from "./enums/views";
-import { routerActions } from "connected-react-router";
-import { sendDataOverPeer } from "../peer/actions";
+import { sendDataOverPeer, connectPeer, disconnectPeer, connectToPeer } from "../peer/actions";
+import * as Util from "@root/util/util";
 
 export function initialize(params: any): AppThunk {
   return dispatch => {
@@ -20,31 +18,41 @@ export function sendPeerMessage(peerId: string, message: PeerMessage): AppThunk 
 }
 
 export function hostPlayerPool(): AppThunk {
-  return (dispatch, getState) => {
-    if (getState().playerPool.conditionsMet) {
-      dispatch(routerActions.replace('/'));
+  return async (dispatch, getState) => {
+    let state = getState();
+    if (!state.lichess.oauth) {
       return;
     }
-    dispatch({
-      type: SWITCH_VIEW,
-      payload: {
-        viewId: HOST_PLAYER_POOL_FORM
-      }
-    })
+    if (state.peer.connection) {
+      await dispatch(disconnectPeer());
+    }
+    let lichessId = state.lichess.oauth.username;
+    try {
+      await dispatch(connectPeer(Util.getPeerIDFromLichessID(lichessId)));
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 }
 
-export function connectToPlayer(): AppThunk {
-  return (dispatch, getState) => {
-    if (getState().playerPool.conditionsMet) {
-      dispatch(routerActions.replace('/'));
+export function connectToPlayer(lichessId: string): AppThunk {
+  return async (dispatch, getState) => {
+    if (!getState().lichess.oauth) {
       return;
     }
-    dispatch({
-      type: SWITCH_VIEW,
-      payload: {
-        viewId: CONNECT_TO_PLAYER_POOL_FORM
-      }
-    })
+    try {
+      await dispatch(connectToPeer(Util.getPeerIDFromLichessID(lichessId)));
+    } catch (err) {
+      throw err;
+    }
+    let peerId = getState().playerPool.playerPoolState?.members.findKey(
+      playerState => playerState.lichessId == lichessId
+    );
+    let myLichessId = getState().lichess.oauth?.username;
+    dispatch(sendPeerMessage(peerId!, {
+      type: 'subscribe',
+      lichessId: myLichessId!
+    }))
   }
 }

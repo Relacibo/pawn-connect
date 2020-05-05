@@ -17,7 +17,7 @@ const portString = port == 80 || port == 443 ? '' : `:${port.toString()}`;
 const oathAPIPath = '/api/oauth/lichess';
 const authorizeUri = `${serverURL}${portString}${oathAPIPath}/authorize`;
 const refreshUri = `${serverURL}${portString}${oathAPIPath}/refresh`;
-const lichessBaseURL = process.env.NODE_ENV == 'development' ? 'https://lichess.dev' : 'https://lichess.org';
+const lichessBaseURL = 'https://lichess.org';
 
 let refreshTokenObject: NodeJS.Timeout;
 const WINDOW_BEFORE_REFRESH = 900000;
@@ -72,7 +72,6 @@ function refreshOAuth(): AppThunk {
   return async (dispatch, getState) => {
     const { refreshToken } = getState().lichess.oauth as OAuth;
     try {
-      console.log(refreshToken);
       const response = await axios({
         method: 'post',
         url: refreshUri,
@@ -81,7 +80,6 @@ function refreshOAuth(): AppThunk {
       const currentTime = new Date().getTime();
       // eslint-disable-next-line @typescript-eslint/camelcase
       const { expires_in: expiresIn } = response.data;
-      console.log(response.data);
       const expireTimeStamp: number = currentTime + parseInt(expiresIn, 10) * 1000;
       set<number>('lichess_expireTimeStamp', expireTimeStamp);
       dispatch({
@@ -158,6 +156,11 @@ export function initializeLichess(params: any): AppThunk {
         oauth = new OAuth(username, accessToken, refreshToken, expireTimeStamp);
       } catch (err) {
         console.log(err);
+        dispatch(
+          lichessLoginError(
+            'OAuth Token invalid!'
+          )
+        );
       }
     } else {
       const username = get<string>('lichess_username');

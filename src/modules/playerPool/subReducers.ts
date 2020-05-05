@@ -1,65 +1,36 @@
 import { Action } from "redux";
-import { UIState } from "./types/UIState";
-import { SWITCH_VIEW, CREATE_PLAYER_POOL } from "./enums/actions";
+import { SWITCH_VIEW, CREATE_PLAYER_POOL, ESTABLISHED_CONNECTION_TO_PLAYER } from "./enums/actions";
 import { CREATED_PEER, DELETED_PEER, RECEIVED_DATA_FROM_PEER } from "../peer/enums/actions";
 import { PlayerPoolState } from "./types/PlayerPoolState";
-
-export function conditionsMet(state: boolean = false, action: Action<string>) {
-  switch (action.type) {
-    case CREATED_PEER:
-      return true;
-    case DELETED_PEER:
-      return false;
-    default:
-      return state;
-  }
-}
-
-function viewId(state: string, action: Action<string>) {
-  switch (action.type) {
-    case SWITCH_VIEW: {
-      const { payload: { viewId } } = (action as any);
-      return viewId;
-    }
-    default:
-      return state;
-  }
-}
-
-export function uiState(state: UIState = new UIState(), action: Action<string>) {
-  switch (action.type) {
-    case SWITCH_VIEW: {
-      return { ...state, viewId: viewId(state.viewId, action) };
-    }
-    default:
-      return state;
-  }
-}
+import { PlayerState } from "./types/PlayerState";
 
 export function playerPoolState(state: PlayerPoolState | null = null, action: Action<string>) {
   switch (action.type) {
     case CREATE_PLAYER_POOL: {
       const newState = (action as any).payload as PlayerPoolState;
-      return { ...newState };
+      return { ...new PlayerPoolState(), ...newState, isHost: true };
     }
     case RECEIVED_DATA_FROM_PEER: {
-      if (!state)
-        return state;
+      let s = state;
+      if (!s) {
+        s = new PlayerPoolState();
+      }
       const { data, peerId } = (action as any).payload;
       const peerMessage: PeerMessage = data as PeerMessage;
       switch (peerMessage.type) {
         case 'subscribe': {
-          if (!state.allowSubscription) {
+          if (!s.allowSubscription) {
             return state;
           }
           const { lichessId } = peerMessage;
-          return { ...state, members: state.members.set(peerId, lichessId) }
+          return { ...s, members: s.members.set(peerId, new PlayerState(lichessId, peerId)) }
         }
         case 'unsubscribe': {
-          return { ...state, members: state.members.delete(peerId) }
+          return { ...s, members: s.members.delete(peerId) }
         }
+        default:
+          return state;
       }
-      return state;
     }
     default:
       return state;
