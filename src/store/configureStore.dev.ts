@@ -5,6 +5,7 @@ import { routerMiddleware } from 'connected-react-router';
 import { createLogger } from 'redux-logger';
 import createRootReducer from '../root/rootReducer';
 import { ProgramState } from '../root/types';
+import playerPoolMiddleWare from '@modules/playerPool/middleware'
 
 declare global {
   interface Window {
@@ -23,6 +24,8 @@ const configureStore = (initialState?: ProgramState) => {
   // Redux Configuration
   const middleware = [];
   const enhancers = [];
+
+  middleware.push(playerPoolMiddleWare);
 
   // Thunk Middleware
   middleware.push(thunk);

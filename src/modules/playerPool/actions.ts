@@ -1,4 +1,4 @@
-import { AppThunk } from "@root/root/types";
+import { AppThunk, Dispatch, GetState } from "@root/root/types";
 import { sendDataOverPeer, connectPeer, disconnectPeer, connectToPeer } from "../peer/actions";
 import * as Util from "@root/util/util";
 

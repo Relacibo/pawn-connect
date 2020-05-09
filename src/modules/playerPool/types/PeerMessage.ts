@@ -3,4 +3,8 @@ type PeerMessage = {
   lichessId: string
 } | {
   type: 'unsubscribe'
+} | {
+  type: 'ok'
+} | {
+  type: 'error'
 }
