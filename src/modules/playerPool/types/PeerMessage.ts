@@ -7,4 +7,8 @@ type PeerMessage = {
   type: 'ok'
 } | {
   type: 'error'
+} | {
+  type: 'update_members',
+  peerIds: string[],
+  lichessIds: string[]
 }

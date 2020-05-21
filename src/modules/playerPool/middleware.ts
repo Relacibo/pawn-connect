@@ -18,9 +18,15 @@ const middleware: ThunkMiddleware = api => next =>
           case 'subscribe': {
             const success = getState().playerPool.playerPoolState?.members.has(peerId);
             if (success) {
-              dispatch(sendPeerMessage(peerId, {
-                type: 'ok'
-              }));
+              const peerIds = getState().playerPool.playerPoolState!.members.keySeq().toArray()
+              const lichessIds = getState().playerPool.playerPoolState!.members.valueSeq().map(p => p.lichessId).toArray()
+              peerIds.forEach(element => {
+                dispatch(sendPeerMessage(peerId, {
+                  type: 'update_members',
+                  peerIds,
+                  lichessIds
+                }));
+              });
             } else {
               dispatch(sendPeerMessage(peerId, {
                 type: 'error'
