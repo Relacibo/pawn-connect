@@ -2,7 +2,7 @@ import { ThunkMiddleware } from "redux-thunk";
 import { Action } from "redux";
 import { GetState, Dispatch } from "@root/root/types";
 import { RECEIVED_DATA_FROM_PEER } from "../peer/enums/actions";
-import { sendPeerMessage } from "./actions";
+import { sendPeerMessage, updateMembers } from "./actions";
 
 const middleware: ThunkMiddleware = api => next =>
   (action: Action<string>) => {
@@ -18,15 +18,7 @@ const middleware: ThunkMiddleware = api => next =>
           case 'subscribe': {
             const success = getState().playerPool.playerPoolState?.members.has(peerId);
             if (success) {
-              const peerIds = getState().playerPool.playerPoolState!.members.keySeq().toArray()
-              const lichessIds = getState().playerPool.playerPoolState!.members.valueSeq().map(p => p.lichessId).toArray()
-              peerIds.forEach(element => {
-                dispatch(sendPeerMessage(peerId, {
-                  type: 'update_members',
-                  peerIds,
-                  lichessIds
-                }));
-              });
+              dispatch(updateMembers());
             } else {
               dispatch(sendPeerMessage(peerId, {
                 type: 'error'
@@ -35,7 +27,18 @@ const middleware: ThunkMiddleware = api => next =>
             break;
           }
           case 'unsubscribe': {
-
+            const success = !getState().playerPool.playerPoolState?.members.has(peerId);
+            if (success) {
+              dispatch(updateMembers())
+            } else {
+              dispatch(sendPeerMessage(peerId, {
+                type: 'error'
+              }));
+            }
+            break;
+          }
+          case 'challenge': {
+            // send lichess challenge
             break;
           }
           default:

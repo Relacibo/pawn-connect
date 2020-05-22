@@ -5,6 +5,7 @@ export class PlayerPoolState {
   constructor(
     readonly host: HostState,
     readonly allowSubscription: boolean = true,
-    readonly members: Map<string, PlayerState> = Map()
+    readonly members: Map<string, PlayerState> = Map(),
+    readonly acceptChallenge: string | null = null
   ) { }
 }

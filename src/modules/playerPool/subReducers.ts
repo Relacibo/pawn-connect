@@ -30,23 +30,30 @@ export function playerPoolState(state: PlayerPoolState | null = null, action: Ac
             return state;
           }
           const { lichessId } = peerMessage;
-          return { ...s, members: s.members.set(peerId, new PlayerState(lichessId, peerId)) }
+          return { ...s, members: s.members.set(lichessId, new PlayerState(lichessId, peerId)) }
         }
         case 'unsubscribe': {
-          return { ...s, members: s.members.delete(peerId) }
+          const lichessId = s.members.find(p => p.peerId == peerId)?.lichessId
+          return lichessId ? { ...s, members: s.members.delete(lichessId) } : state;
         }
         case 'update_members': {
-          if (!state!.host.isHost && state!.host.peerId == peerId) {
-            return {
-              ...s, members: Map(zip(peerMessage.peerIds, peerMessage.lichessIds).map(p => {
-                const [peerId, lichessId] = p;
-                return [peerId, new PlayerState(lichessId, peerId)];
-              }))
-            }
-          } else {
+          if (state!.host.isHost || state!.host.peerId != peerId) {
             return state;
           }
-
+          return {
+            ...s, members: Map(zip(peerMessage.lichessIds, peerMessage.peerIds).map(p => {
+              const [lichessId, peerId] = p;
+              return [lichessId, new PlayerState(lichessId, peerId)];
+            }))
+          }
+        }
+        case 'accept_challenge': {
+          if (state!.host.isHost || state!.host.peerId != peerId) {
+            return state;
+          }
+          return {
+            ...s, acceptChallenge: peerMessage.lichessId
+          }
         }
         default:
           return state;
