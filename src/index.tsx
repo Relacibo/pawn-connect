@@ -22,12 +22,13 @@ function bootstrapApp() {
 
   dispatch(initialize());
   const AppContainer = React.Fragment;
-  document.addEventListener('DOMContentLoaded', () =>
+  document.addEventListener('DOMContentLoaded', () => {
     render(
-      <AppContainer>
+      (<AppContainer>
         <Root store={store} history={history} />
-      </AppContainer>,
+      </AppContainer>),
       document.getElementById('root')
     )
+  }
   );
 }

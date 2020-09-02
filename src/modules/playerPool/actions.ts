@@ -57,7 +57,7 @@ export function connectToPlayer(lichessId: string): AppThunk {
   }
 }
 
-export function updateMembers(): AppThunk {
+export function updateClients(): AppThunk {
   return async (dispatch, getState) => {
     const peerIds = getState().playerPool.playerPoolState!.members.keySeq().toArray()
     const lichessIds = getState().playerPool.playerPoolState!.members.valueSeq().map(p => p.lichessId).toArray()

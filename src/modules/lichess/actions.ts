@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import axios from 'axios';
 import { get, set, remove } from 'local-storage';
+import ndjson from 'ndjson';
 import {
   GAINED_LICHESS_TOKEN,
   LICHESS_TOKEN_REVOKED,
@@ -57,6 +58,7 @@ export function loginToLichess() {
 
 export function logoutFromLichess(): AppThunk {
   return async dispatch => {
+    
     remove('lichess_username');
     remove('lichess_accessToken');
     remove('lichess_refreshToken');
@@ -70,12 +72,15 @@ export function logoutFromLichess(): AppThunk {
 
 function refreshOAuth(): AppThunk {
   return async (dispatch, getState) => {
-    const { refreshToken } = getState().lichess.oauth as OAuth;
+    if (getState().lichess.oauth) {
+      return;
+    }
+    const { refreshToken } = getState().lichess.oauth!;
     try {
       const response = await axios({
         method: 'post',
         url: refreshUri,
-        data: {refresh_token: refreshToken},
+        data: { refresh_token: refreshToken },
       });
       const currentTime = new Date().getTime();
       // eslint-disable-next-line @typescript-eslint/camelcase
@@ -110,14 +115,16 @@ function refreshOAuth(): AppThunk {
 async function authorizedLichessAPICall(
   path: string,
   method: 'post' | 'get',
-  accessToken: string
+  accessToken: string,
+  responseType: "json" | "arraybuffer" | "blob" | "document" | "text" | "stream" | undefined = 'json'
 ) {
   const response = await axios(path, {
     method,
     baseURL: lichessBaseURL,
     headers: {
       Authorization: `Bearer ${accessToken}`
-    }
+    },
+    responseType
   });
   return response;
 }
@@ -192,4 +199,40 @@ export function initializeLichess(params: any): AppThunk {
       });
     }
   };
+}
+
+export function connectToEventStream(): AppThunk {
+  return async (dispatch, getState) => {
+    const lichessState = getState().lichess
+    if (!lichessState.oauth) {
+      return;
+    }
+    const { accessToken, username } = getState().lichess.oauth!;
+    const response = await authorizedLichessAPICall('/api/events', 'get', accessToken, 'stream');
+    (response.data as any).pipe(ndjson.parse()).on('data', (d: any) => {
+      switch(d.type) {
+        case 'challenge': {
+          console.log('challenge!')
+          break;
+        }
+        case 'gameStart': {
+          console.log('gameStart!')
+          break;
+        }
+        case 'gameFinish': {
+          console.log('gameFinish!')
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    })
+  }
+}
+
+export function sendChallenge(lichessId: string): AppThunk {
+  return dispatch => {
+
+  }
 }

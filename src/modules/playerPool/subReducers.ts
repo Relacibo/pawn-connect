@@ -1,6 +1,6 @@
 import { Action } from "redux";
 import { Map } from 'immutable';
-import { CREATE_PLAYER_POOL, ESTABLISHED_CONNECTION_TO_PLAYER, DELETE_PLAYER_POOL } from "./enums/actions";
+import { CREATE_PLAYER_POOL, DELETE_PLAYER_POOL, RECEIVED_SUBSCRIBE_REQUEST, RECEIVED_UNSUBSCRIBE_REQUEST, RECEIVED_MEMBERS_UPDATE, RECEIVED_LICHESS_CHALLENGE_COMMAND, RECEIVED_LICHESS_ACCEPT_CHALLENGE_COMMAND } from "./enums/actions";
 import { CREATED_PEER, DELETED_PEER, RECEIVED_DATA_FROM_PEER } from "../peer/enums/actions";
 import { PlayerPoolState } from "./types/PlayerPoolState";
 import { PlayerState } from "./types/PlayerState";
@@ -17,46 +17,41 @@ export function playerPoolState(state: PlayerPoolState | null = null, action: Ac
     case DELETE_PLAYER_POOL: {
       return null
     }
-    case RECEIVED_DATA_FROM_PEER: {
-      let s = state;
-      if (!s) {
+    case RECEIVED_SUBSCRIBE_REQUEST: {
+      if (!state || !state.allowSubscription) {
         return state;
       }
-      const { data, peerId } = (action as any).payload;
-      const peerMessage: PeerMessage = data as PeerMessage;
-      switch (peerMessage.type) {
-        case 'subscribe': {
-          if (!s.allowSubscription) {
-            return state;
-          }
-          const { lichessId } = peerMessage;
-          return { ...s, members: s.members.set(lichessId, new PlayerState(lichessId, peerId)) }
-        }
-        case 'unsubscribe': {
-          const lichessId = s.members.find(p => p.peerId == peerId)?.lichessId
-          return lichessId ? { ...s, members: s.members.delete(lichessId) } : state;
-        }
-        case 'update_members': {
-          if (state!.host.isHost || state!.host.peerId != peerId) {
-            return state;
-          }
-          return {
-            ...s, members: Map(zip(peerMessage.lichessIds, peerMessage.peerIds).map(p => {
-              const [lichessId, peerId] = p;
-              return [lichessId, new PlayerState(lichessId, peerId)];
-            }))
-          }
-        }
-        case 'accept_challenge': {
-          if (state!.host.isHost || state!.host.peerId != peerId) {
-            return state;
-          }
-          return {
-            ...s, acceptChallenge: peerMessage.lichessId
-          }
-        }
-        default:
-          return state;
+      const { lichessId, peerId } = (action as any).payload;
+      return { ...state, members: state.members.set(lichessId, new PlayerState(lichessId, peerId)) }
+    }
+    case RECEIVED_UNSUBSCRIBE_REQUEST: {
+      if (!state) {
+        return state;
+      }
+      const { peerId } = (action as any).payload;
+      const lichessId = state.members.find(p => p.peerId == peerId)?.lichessId
+      return lichessId ? { ...state, members: state.members.delete(lichessId) } : state;
+    }
+
+    case RECEIVED_MEMBERS_UPDATE: {
+      const { peerIds, lichessIds } = (action as any).payload;
+      if (!state) {
+        return state;
+      }
+      return {
+        ...state, members: Map(zip(lichessIds, peerIds).map(p => {
+          const [lichessId, peerId] = p;
+          return [lichessId, new PlayerState(lichessId, peerId)];
+        }))
+      }
+    }
+    case RECEIVED_LICHESS_ACCEPT_CHALLENGE_COMMAND: {
+      if (!state) {
+        return state;
+      }
+      const { lichessId } = (action as any).payload;
+      return {
+        ...state, acceptChallenge: lichessId
       }
     }
     default:
