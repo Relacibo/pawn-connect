@@ -18,7 +18,7 @@ const form = (props: Props) => {
           <Link to={`${match.url}${routes.JOIN}`} className={styles.button}>
             Join player pool
             </Link>
-          <div className={styles.button} onClick={props.hostPlayerPool}>
+          <div className={styles.button} onClick={props.hostPlayerPool}> 
             Host player pool
           </div>
         </Route>

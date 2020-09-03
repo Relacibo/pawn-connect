@@ -210,17 +210,15 @@ export function connectToEventStream(): AppThunk {
     const { accessToken, username } = getState().lichess.oauth!;
     const response = await authorizedLichessAPICall('/api/events', 'get', accessToken, 'stream');
     (response.data as any).pipe(ndjson.parse()).on('data', (d: any) => {
+      console.log(d)
       switch(d.type) {
         case 'challenge': {
-          console.log('challenge!')
           break;
         }
         case 'gameStart': {
-          console.log('gameStart!')
           break;
         }
         case 'gameFinish': {
-          console.log('gameFinish!')
           break;
         }
         default: {

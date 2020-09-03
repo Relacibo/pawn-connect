@@ -1,11 +1,13 @@
-import * as React from 'react';
+import React, { Fragment } from 'react';
 import { render } from 'react-dom';
-import Root from './root/RootView';
 import { configureStore, history } from './store/configureStore';
 import './views/app.global.css';
 import { initialize } from './modules/initialize/actions';
 import { Dispatch } from './root/types';
 import * as ls from 'local-storage';
+import { Provider } from 'react-redux';
+import { ConnectedRouter } from 'connected-react-router';
+import Routes from './Routes';
 
 if (location.pathname.startsWith('/api')) {
   const { params } = (window as any);
@@ -19,14 +21,14 @@ if (location.pathname.startsWith('/api')) {
 function bootstrapApp() {
   const store = configureStore();
   const dispatch = store.dispatch as Dispatch;
-
   dispatch(initialize());
-  const AppContainer = React.Fragment;
   document.addEventListener('DOMContentLoaded', () => {
     render(
-      (<AppContainer>
-        <Root store={store} history={history} />
-      </AppContainer>),
+      <Provider store={store}>
+        <ConnectedRouter history={history}>
+          <Routes />
+        </ConnectedRouter>
+      </Provider>,
       document.getElementById('root')
     )
   }

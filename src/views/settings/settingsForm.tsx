@@ -3,41 +3,34 @@
 /* eslint-disable react/prefer-stateless-function */
 
 /* eslint-disable react/destructuring-assignment */
-import React, { ChangeEvent } from 'react';
+import React, { useState } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import { Map } from 'immutable';
 import { ProgramState } from '../../root/types';
 import { settingsStoreValue } from '../../modules/settings/actions';
 import { LICHESS_TOKEN } from '../../modules/settings/enums/configKeys';
 
-class SettingsForm extends React.Component<Props, State, any> {
-  constructor(props: Props) {
-    super(props);
-    const { config } = this.props;
-    this.state = {
-      ...this.state,
-      config
-    };
-  }
+const SettingsForm = (props: Props) => {
+  let [config, setConfig] = useState(props.config);
 
-  storeValue = (key: string, value: any) => {
-    this.props.settingsStoreValue({
+
+  const storeValue = (key: string, value: any) => {
+    props.settingsStoreValue({
       key,
       value
     });
   };
 
-  onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement;
-    this.storeValue(target.id, target.value);
+    storeValue(target.id, target.value);
     e.preventDefault();
   };
 
-  onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     switch (e.key) {
       case 'Enter': {
         const target = e.target as HTMLInputElement;
-        this.storeValue(e.key, target.value);
+        storeValue(e.key, target.value);
         e.preventDefault();
         break;
       }
@@ -46,34 +39,27 @@ class SettingsForm extends React.Component<Props, State, any> {
     }
   };
 
-  onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement;
-    const { config } = this.state;
-    this.setState(prevState => {
-      return { ...prevState, config: config.set(target.id, target.value) };
-    });
+    setConfig(config.set(target.id, target.value))
   };
-
-  render() {
-    return (
-      <form className={this.state.className}>
-        <label htmlFor={LICHESS_TOKEN}>
-          Lichess Auth Token:
+  const [className, setClassName] = useState('')
+  return (
+    <form className={className}>
+      <label htmlFor={LICHESS_TOKEN}>
+        Lichess Auth Token:
           <input
-            id={LICHESS_TOKEN}
-            type="text"
-            onBlur={this.onBlur}
-            onChange={this.onChange}
-            onKeyDown={this.onKeyDown}
-            value={this.state.config.get(LICHESS_TOKEN) || ''}
-          />
-        </label>
-      </form>
-    );
-  }
+          id={LICHESS_TOKEN}
+          type="text"
+          onBlur={onBlur}
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+          value={config.get(LICHESS_TOKEN) || ''}
+        />
+      </label>
+    </form>
+  );
 }
-
-type State = { className: string; config: Map<string, any> };
 
 function mapStateToProps(state: ProgramState) {
   return {
