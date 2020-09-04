@@ -4,8 +4,9 @@ import { Link, Route, Switch, useRouteMatch } from 'react-router-dom';
 import routes from './routes.json';
 import JoinForm from './joinForm';
 import HostComponent from './hostComponent';
+import { connect, ConnectedProps } from "react-redux";
 import { hostPlayerPool } from '@modules/playerPool/actions';
-import { connect, ConnectedProps } from 'react-redux';
+import { ProgramState } from "@root/root/types";
 
 const form = (props: Props) => {
   let match = useRouteMatch();
@@ -18,9 +19,9 @@ const form = (props: Props) => {
           <Link to={`${match.url}${routes.JOIN}`} className={styles.button}>
             Join player pool
             </Link>
-          <div className={styles.button} onClick={props.hostPlayerPool}> 
+          <button onClick={props.hostPlayerPool} className={styles.button}> 
             Host player pool
-          </div>
+          </button>
         </Route>
       </Switch>
     </div>
@@ -31,9 +32,14 @@ const actionCreators = {
   hostPlayerPool
 };
 
-let connected = connect(null, actionCreators);
+function mapStateToProps(state: ProgramState) {
+  return {
+    isLoggedIn: state.lichess.oauth != null
+  };
+}
+
+let connected = connect(mapStateToProps, actionCreators);
 
 type Props = ConnectedProps<typeof connected>;
 
-export default connected(form);
-
+export default connected(form)

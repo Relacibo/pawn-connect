@@ -3,8 +3,8 @@
 import { Action } from 'redux';
 import OAuth from './types/OAuth';
 import {
-  GAINED_LICHESS_TOKEN,
-  LICHESS_TOKEN_REVOKED,
+  GAINED_LICHESS_CREDENTIALS,
+  LICHESS_CREDENTIALS_REVOKED,
   LICHESS_REFRESHED_TOKEN,
   LICHESS_LOGGING_IN,
   LICHESS_LOGIN_ERROR
@@ -22,9 +22,9 @@ function expireTimeStamp(state: number, action: Action<string>) {
 
 export function oauth(state: OAuth | null = null, action: Action<string>): OAuth | null {
   switch (action.type) {
-    case GAINED_LICHESS_TOKEN:
+    case GAINED_LICHESS_CREDENTIALS:
       return { ...state, ...(action as any).payload } as OAuth;
-    case LICHESS_TOKEN_REVOKED:
+    case LICHESS_CREDENTIALS_REVOKED:
       return null;
     case LICHESS_REFRESHED_TOKEN:
       if (state == null)
@@ -42,9 +42,9 @@ export function loginState(state: number = LOGGED_OUT, action: Action<string>) {
   switch (action.type) {
     case LICHESS_LOGGING_IN:
       return LOGGING_IN;
-    case GAINED_LICHESS_TOKEN:
+    case GAINED_LICHESS_CREDENTIALS:
       return LOGGED_IN;
-    case LICHESS_TOKEN_REVOKED:
+    case LICHESS_CREDENTIALS_REVOKED:
       return LOGGED_OUT;
     case LICHESS_LOGIN_ERROR:
       return LOGGED_OUT;

@@ -9,28 +9,17 @@ import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
 import Routes from './Routes';
 
-if (location.pathname.startsWith('/api')) {
-  const { params } = (window as any);
-  if (params) {
-    ls.set<any>('params', params);
-  }
-  location.replace('/');
-} else {
-  bootstrapApp();
-}
-function bootstrapApp() {
-  const store = configureStore();
-  const dispatch = store.dispatch as Dispatch;
-  dispatch(initialize());
-  document.addEventListener('DOMContentLoaded', () => {
-    render(
-      <Provider store={store}>
-        <ConnectedRouter history={history}>
-          <Routes />
-        </ConnectedRouter>
-      </Provider>,
-      document.getElementById('root')
-    )
-  }
-  );
-}
+const store = configureStore();
+const dispatch = store.dispatch as Dispatch;
+dispatch(initialize());
+document.addEventListener('DOMContentLoaded', () => {
+  render(
+    <Provider store={store}>
+      <ConnectedRouter history={history}>
+        <Routes />{}
+      </ConnectedRouter>
+    </Provider>,
+    document.getElementById('root')
+  )
+});
+

@@ -4,16 +4,19 @@ type PeerMessage = {
 } | {
   type: 'unsubscribe'
 } | {
-  type: 'ok'
+  type: 'ok',
+  answerTo: string
 } | {
-  type: 'error'
+  type: 'error',
+  answerTo: string
 } | {
   type: 'update_members',
   peerIds: string[],
   lichessIds: string[]
 } | {
   type: 'challenge',
-  lichessId: string
+  lichessId: string,
+  params: any
 } | {
   type: 'accept_challenge',
   lichessId: string

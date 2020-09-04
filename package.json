@@ -12,10 +12,12 @@
   "license": "GPL-3.0-only",
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --config webpack.config.prod.babel.js && node copy-static.js",
-    "dev": "cross-env NODE_ENV=development node copy-static.js && cross-env PORT=3001 webpack-dev-server --hot --config webpack.config.dev.babel.js"
+    "dev": "cross-env NODE_ENV=development node copy-static.js && cross-env PORT=3001 webpack-dev-server --config webpack.config.dev.babel.js"
   },
   "dependencies": {
+    "@types/ndjson": "^2.0.0",
     "axios": "^0.19.2",
+    "can-ndjson-stream": "^1.0.2",
     "connected-react-router": "^6.8.0",
     "core-js": "^3.6.5",
     "cross-env": "^7.0.2",
@@ -56,7 +58,6 @@
     "@types/http-status-codes": "^1.2.0",
     "@types/immutable": "^3.8.7",
     "@types/local-storage": "^1.4.0",
-    "@types/ndjson": "^2.0.0",
     "@types/peerjs": "^1.1.0",
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.6",

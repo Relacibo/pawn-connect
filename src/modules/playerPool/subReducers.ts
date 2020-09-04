@@ -1,31 +1,39 @@
 import { Action } from "redux";
 import { Map } from 'immutable';
-import { CREATE_PLAYER_POOL, DELETE_PLAYER_POOL, RECEIVED_SUBSCRIBE_REQUEST, RECEIVED_UNSUBSCRIBE_REQUEST, RECEIVED_MEMBERS_UPDATE, RECEIVED_LICHESS_CHALLENGE_COMMAND, RECEIVED_LICHESS_ACCEPT_CHALLENGE_COMMAND } from "./enums/actions";
-import { CREATED_PEER, DELETED_PEER, RECEIVED_DATA_FROM_PEER } from "../peer/enums/actions";
-import { PlayerPoolState } from "./types/PlayerPoolState";
+import { CREATE_PLAYER_POOL, DELETE_PLAYER_POOL, RECEIVED_SUBSCRIBE_REQUEST, RECEIVED_UNSUBSCRIBE_REQUEST, RECEIVED_MEMBERS_UPDATE, RECEIVED_LICHESS_CHALLENGE_COMMAND, RECEIVED_LICHESS_ACCEPT_CHALLENGE_COMMAND, PLAYER_POOL_SUBSCRIPTION_SUCCESS, CONNECTING_TO_PLAYER_POOL } from "./enums/actions";
+import { PlayerPoolState, PlayerPoolConnected, PlayerPoolDisconnected, PlayerPoolConnecting } from "./types/PlayerPoolState";
 import { PlayerState } from "./types/PlayerState";
-import { HostState, SelfHost, Client } from "./types/HostState";
+import { SelfHost, Client } from "./types/HostState";
 import { zip } from "@root/util/util";
 
-export function playerPoolState(state: PlayerPoolState | null = null, action: Action<string>): PlayerPoolState | null {
+export function playerPoolState(state: PlayerPoolState = new PlayerPoolDisconnected(), action: Action<string>): PlayerPoolState {
   switch (action.type) {
     case CREATE_PLAYER_POOL: {
-      const payload = (action as any).payload;
-      const host = payload.asHost ? SelfHost() : Client(payload.peerId);
-      return new PlayerPoolState(host);
+      return new PlayerPoolConnected(SelfHost());
     }
-    case DELETE_PLAYER_POOL: {
-      return null
+    case CONNECTING_TO_PLAYER_POOL: {
+      const { peerId }: { peerId: string } = (action as any).payload;
+      return new PlayerPoolConnecting(Client(peerId))
     }
-    case RECEIVED_SUBSCRIBE_REQUEST: {
-      if (!state || !state.allowSubscription) {
+    case PLAYER_POOL_SUBSCRIPTION_SUCCESS: {
+      if (state.type != 'connecting') {
         return state;
       }
-      const { lichessId, peerId } = (action as any).payload;
+      const { peerId }: { peerId: string } = (action as any).payload;
+      return new PlayerPoolConnected(Client(peerId));
+    }
+    case DELETE_PLAYER_POOL: {
+      return new PlayerPoolDisconnected()
+    }
+    case RECEIVED_SUBSCRIBE_REQUEST: {
+      if (state.type != 'connected' || !state.host.isHost || !state.allowSubscription) {
+        return state;
+      }
+      const { lichessId, peerId }: { lichessId: string, peerId: string } = (action as any).payload;
       return { ...state, members: state.members.set(lichessId, new PlayerState(lichessId, peerId)) }
     }
     case RECEIVED_UNSUBSCRIBE_REQUEST: {
-      if (!state) {
+      if (state.type != 'connected' || !state.host.isHost) {
         return state;
       }
       const { peerId } = (action as any).payload;
@@ -35,7 +43,7 @@ export function playerPoolState(state: PlayerPoolState | null = null, action: Ac
 
     case RECEIVED_MEMBERS_UPDATE: {
       const { peerIds, lichessIds } = (action as any).payload;
-      if (!state) {
+      if (state.type != 'connected') {
         return state;
       }
       return {
@@ -46,7 +54,7 @@ export function playerPoolState(state: PlayerPoolState | null = null, action: Ac
       }
     }
     case RECEIVED_LICHESS_ACCEPT_CHALLENGE_COMMAND: {
-      if (!state) {
+      if (state.type != 'connected') {
         return state;
       }
       const { lichessId } = (action as any).payload;

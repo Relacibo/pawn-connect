@@ -3,7 +3,7 @@ import { Action } from "redux";
 import { GetState, Dispatch } from "@root/root/types";
 import { RECEIVED_DATA_FROM_PEER } from "../peer/enums/actions";
 import { sendPeerMessage, updateClients } from "./actions";
-import { RECEIVED_SUBSCRIBE_REQUEST, RECEIVED_UNSUBSCRIBE_REQUEST, RECEIVED_MEMBERS_UPDATE, RECEIVED_LICHESS_ACCEPT_CHALLENGE_COMMAND } from "./enums/actions";
+import { RECEIVED_SUBSCRIBE_REQUEST, RECEIVED_UNSUBSCRIBE_REQUEST, RECEIVED_MEMBERS_UPDATE, RECEIVED_LICHESS_ACCEPT_CHALLENGE_COMMAND, PLAYER_POOL_SUBSCRIPTION_SUCCESS } from "./enums/actions";
 import { sendChallenge } from "../lichess/actions";
 
 const middleware: ThunkMiddleware = api => next =>
@@ -18,16 +18,26 @@ const middleware: ThunkMiddleware = api => next =>
         const { data, peerId }:
           { data: PeerMessage, peerId: string } = (action as any).payload;
         const playerPoolState = getState().playerPool.playerPoolState;
-        if (!playerPoolState) {
-          result = next(action);
-          break;
-        }
-        const host = playerPoolState.host;
+        const isHost = playerPoolState.type != 'disconnected' && playerPoolState.host.isHost;
+        const isFromHost = playerPoolState.type != 'disconnected' && !playerPoolState.host.isHost && playerPoolState.host.peerId == peerId;
         switch (data.type) {
+          case 'ok': {
+            const { answerTo } = data;
+            switch (answerTo) {
+              case 'subscribe': {
+                if (isHost || playerPoolState.type != 'connecting') {
+                  dispatch({ type: PLAYER_POOL_SUBSCRIPTION_SUCCESS, payload: {
+
+                  }})
+                  return next(action);
+                }
+              }
+            }
+            return next(action);
+          }
           case 'subscribe': {
-            if (!host.isHost) {
-              result = next(action);
-              break;
+            if (!isHost || playerPoolState.type != 'connected') {
+              return next(action);
             }
             const { lichessId } = data;
             if (lichessId) {
@@ -40,17 +50,21 @@ const middleware: ThunkMiddleware = api => next =>
             const success = playerPoolState.members.has(peerId);
             if (success) {
               dispatch(updateClients());
+              dispatch(sendPeerMessage(peerId, {
+                type: 'ok',
+                answerTo: 'subscribe'
+              }));
             } else {
               dispatch(sendPeerMessage(peerId, {
-                type: 'error'
+                type: 'error',
+                answerTo: 'subscribe'
               }));
             }
             break;
           }
           case 'unsubscribe': {
-            if (!host.isHost) {
-              result = next(action);
-              break;
+            if (playerPoolState.type != 'connected' || !isHost) {
+              return next(action);
             }
             dispatch({
               type: RECEIVED_UNSUBSCRIBE_REQUEST,
@@ -60,17 +74,21 @@ const middleware: ThunkMiddleware = api => next =>
             const success = !playerPoolState.members.has(peerId);
             if (success) {
               dispatch(updateClients())
+              dispatch(sendPeerMessage(peerId, {
+                type: 'ok',
+                answerTo: 'unsubscribe'
+              }));
             } else {
               dispatch(sendPeerMessage(peerId, {
-                type: 'error'
+                type: 'error',
+                answerTo: 'unsubscribe'
               }));
             }
             break;
           }
           case 'update_members': {
-            if (host.isHost || host.peerId != peerId) {
-              result = next(action);
-              break;
+            if (!isFromHost) {
+              return next(action);
             }
             const { peerIds, lichessIds } = data;
             dispatch({
@@ -81,22 +99,19 @@ const middleware: ThunkMiddleware = api => next =>
                 lichessIds
               }
             })
-            result = next(action);
-            break;
+            return next(action);
           }
           case 'challenge': {
-            result = next(action);
-            if (host.isHost || host.peerId != peerId) {
+            if (!isFromHost) {
               break;
             }
-            const { lichessId } = data;
+            const { lichessId, params } = data;
             // send lichess challenge
-            dispatch(sendChallenge(lichessId))
-            break;
+            dispatch(sendChallenge(lichessId, params))
+            return next(action);
           }
           case 'accept_challenge': {
-            result = next(action);
-            if (host.isHost || host.peerId != peerId) {
+            if (!isFromHost) {
               break;
             }
             const { lichessId } = data;
@@ -104,17 +119,15 @@ const middleware: ThunkMiddleware = api => next =>
               type: RECEIVED_LICHESS_ACCEPT_CHALLENGE_COMMAND,
               payload: { lichessId }
             })
-            break;
+            return next(action);
           }
           default:
-            result = next(action);
-            break;
+            return next(action);
         }
         break;
       }
       default: {
-        result = next(action);
-        break;
+        return next(action);
       }
     }
     return result!;

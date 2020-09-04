@@ -1,11 +1,7 @@
 import path from 'path';
 
 export default {
-  resolve: {
-    // Add '.ts' and '.tsx' as resolvable extensions.
-    extensions: [".ts", ".tsx"]
-  },
-
+  watch: true,
   module: {
     rules: [
       {
@@ -36,7 +32,7 @@ export default {
       "@modules": path.resolve(__dirname, 'src/modules'),
       "@root": path.resolve(__dirname, 'src')
     },
-    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
+    extensions: ['.ts', '.tsx', '.js', '.jsx']
   },
 
   // When importing a module whose path matches one of the following, just

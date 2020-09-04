@@ -4,21 +4,23 @@ import styles from './css/playerPool.css';
 import Back from '../components/back';
 import { ProgramState } from '@root/root/types';
 import { ConnectedProps, connect } from 'react-redux';
-import { PlayerState } from '@root/modules/playerPool/types/PlayerState';
+import { Seq } from 'immutable';
+import { disconnectFromPlayerPool } from '@modules/playerPool/actions';
 
 const PlayerPool = (props: Props) => {
   return (
     <div>
       <Back />
-      {!props.showPool ? (
+      {!props.connected ? (
         <div className={styles['player-pool-form']}><PlayerPoolForm /></div>
       ) : (
-          <div>
+          <div><button className={styles.button} onClick={props.disconnectFromPlayerPool}>Disconnect</button>
             <table>
-              <th>
-                <td>Lichess ID</td>
-                <td>Connected?</td>
-              </th>{
+              <thead>
+              <tr>
+                <th>lichessId</th>
+                <th>isConnected</th>
+              </tr></thead><tbody>{
                 props.members?.map((player) => {
                   return (
                     <tr>
@@ -27,26 +29,27 @@ const PlayerPool = (props: Props) => {
                     </tr>
                   );
                 })
-              }</table></div>
+              }</tbody></table></div>
         )}
     </div>
   );
 }
 function mapStateToProps(state: ProgramState) {
+  const playerPoolState = state.playerPool.playerPoolState;
   return {
-    showPool: state.playerPool.playerPoolState != null,
-    members: state.playerPool.playerPoolState?.members.valueSeq().map(
+    connected: playerPoolState.type == 'connected',
+    members: (playerPoolState.type == 'connected') ? playerPoolState.members.valueSeq().map(
       player => {
         return {
           isConnected: player.isConnected,
           lichessId: player.lichessId
         };
-      })
+      }) : Seq()
   };
 }
 
 const actionCreators = {
-
+  disconnectFromPlayerPool
 };
 
 const connector = connect(mapStateToProps, actionCreators);
