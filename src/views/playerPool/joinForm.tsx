@@ -22,25 +22,23 @@ const connector = connect(mapStateToProps, actionCreators);
 type Props = ConnectedProps<typeof connector>;
 const JoinForm = (props: Props) => {
   let [lichessId, setLichessId] = useState('')
+  const history = useHistory();
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     setLichessId(event.target.value);
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    try {
-      props.connectToPlayer(lichessId);
-    } catch (err) {
-      return;
-    }
-    useHistory().push(routes.PLAYER_POOL);
+    await props.connectToPlayer(lichessId);
+    history.push(routes.PLAYER_POOL);
   }
 
   return (
     <form onSubmit={handleSubmit} >
+    <h4 style={{marginTop: '.5rem'}}>Join Player Pool</h4>
       <div>
-        <label className={styles.label}>Lichess ID (host)</label>
+        <label className={styles.label}>Lichess username</label>
         <input className={styles.input} value={lichessId} onChange={handleChange}></input>
       </div>
       <div>

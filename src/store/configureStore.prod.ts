@@ -1,12 +1,12 @@
 import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
-import { createHashHistory } from 'history';
+import { createBrowserHistory } from 'history';
 import { routerMiddleware } from 'connected-react-router';
 import createRootReducer from '@root/root/rootReducer';
 import { Store, ProgramState } from '@root/root/types';
 import playerPoolMiddleWare from '@modules/playerPool/middleware'
 
-const history = createHashHistory();
+const history = createBrowserHistory();
 const rootReducer = createRootReducer(history);
 const router = routerMiddleware(history);
 let enhancer = applyMiddleware(playerPoolMiddleWare, thunk, router);

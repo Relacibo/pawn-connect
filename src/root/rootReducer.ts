@@ -5,6 +5,7 @@ import settings from '@modules/settings/reducer';
 import peer from '@modules/peer/reducer';
 import lichess from '@modules/lichess/reducer';
 import playerPool from '@root/modules/playerPool/reducer';
+import ui from '@root/modules/ui/reducer';
 
 export default function createRootReducer(history: History) {
   return combineReducers({
@@ -12,6 +13,7 @@ export default function createRootReducer(history: History) {
     settings,
     lichess,
     peer,
-    playerPool
+    playerPool,
+    ui
   });
 }

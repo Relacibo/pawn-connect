@@ -4,13 +4,11 @@ import { Map, List } from 'immutable';
 import {
   CONNECTING,
   CONNECTED,
-  DISCONNECTED
 } from './enums/connectionState';
 import {
   CONNECTING_WITH_PEER,
   CONNECTED_WITH_PEER,
   DISCONNECTED_FROM_PEER,
-  RECEIVED_DATA_FROM_PEER,
   CREATED_PEER,
   DELETED_PEER
 } from './enums/actions';

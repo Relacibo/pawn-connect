@@ -1,22 +1,30 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { render } from 'react-dom';
 import { configureStore, history } from './store/configureStore';
 import './views/app.global.css';
-import { initialize } from './modules/initialize/actions';
-import { Dispatch } from './root/types';
-import * as ls from 'local-storage';
+import { get, remove } from 'local-storage';
 import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
-import Routes from './Routes';
+import App from './App';
+import { initialize as initializeLichess } from './modules/lichess/actions';
+import { Dispatch } from './root/types';
+import { ToastProvider } from 'react-toast-notifications';
 
 const store = configureStore();
-const dispatch = store.dispatch as Dispatch;
-dispatch(initialize());
+const dispatch: Dispatch = store.dispatch;
+// Initialize from params
+var params = get<any>('params');
+params = params || {};
+const { lichessOAuth } = params;
+dispatch(initializeLichess(lichessOAuth))
+remove('params');
 document.addEventListener('DOMContentLoaded', () => {
   render(
     <Provider store={store}>
       <ConnectedRouter history={history}>
-        <Routes />{}
+        <ToastProvider>
+          <App />{}
+        </ToastProvider>
       </ConnectedRouter>
     </Provider>,
     document.getElementById('root')

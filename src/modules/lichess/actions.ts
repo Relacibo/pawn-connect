@@ -1,49 +1,42 @@
 /* eslint-disable no-console */
 import axios from 'axios';
 import { get, set, remove } from 'local-storage';
-import ndjson from 'ndjson';
 import {
   GAINED_LICHESS_CREDENTIALS,
   LICHESS_CREDENTIALS_REVOKED,
-  LICHESS_LOGIN_ERROR,
-  LICHESS_REFRESHED_TOKEN,
   LICHESS_LOGGING_IN,
   LICHESS_EVENT_CHALLENGE,
   LICHESS_EVENT_GAME_START,
   LICHESS_EVENT_GAME_FINISH,
   SENT_LICHESS_CHALLENGE
 } from './enums/actions';
-import { Dispatch, AppThunk, GetState } from '@root/root/types';
+import { Dispatch, AppThunk } from '@root/root/types';
+import { createError } from '@modules/actions'
 import OAuth from './types/OAuth';
-const httpAdapter = require('axios/lib/adapters/http');
+import { authorizedLichessAPICall } from './util';
 
 const serverURL = process.env.SERVER_URL || '';
 const port = Number(process.env.SERVER_PORT || 443);
 const portString = port == 80 || port == 443 ? '' : `:${port.toString()}`;
 const oathAPIPath = '/api/oauth/lichess';
 const authorizeUri = `${serverURL}${portString}${oathAPIPath}/authorize`;
-const refreshUri = `${serverURL}${portString}${oathAPIPath}/refresh`;
-const revokeUri = `${serverURL}${portString}${oathAPIPath}/revoke`;
 const lichessBaseURL = 'https://lichess.org';
 
 let refreshTokenObject: NodeJS.Timeout;
+
+/*
+const refreshUri = `${serverURL}${portString}${oathAPIPath}/refresh`;
+const revokeUri = `${serverURL}${portString}${oathAPIPath}/revoke`;
 const WINDOW_BEFORE_REFRESH = 900000;
 const WAIT_AFTER_REFRESH_FAIL = 90000;
 let refreshFailCount = 0;
-const MAX_REFRESH_FAIL_COUNT = 9;
+const MAX_REFRESH_FAIL_COUNT = 9;*/
 
 var eventStream: ReadableStream | null = null;
 
 export function lichessTokenRevoked() {
   return {
     type: LICHESS_CREDENTIALS_REVOKED
-  };
-}
-
-export function lichessLoginError(message: string) {
-  return {
-    type: LICHESS_LOGIN_ERROR,
-    payload: { message }
   };
 }
 
@@ -56,7 +49,7 @@ export function loginToLichess() {
     } catch (err) {
       console.log(err);
       dispatch(
-        lichessLoginError(
+        createError(
           'Failed to login to lichess! Try again in one minute!'
         )
       );
@@ -66,9 +59,7 @@ export function loginToLichess() {
 
 export function logoutFromLichess(): AppThunk {
   return async dispatch => {
-    remove('lichess_accessToken');
-    remove('lichess_refreshToken');
-    remove('lichess_expireTimeStamp');
+    remove('lichess_state')
     clearTimeout(refreshTokenObject);
     if (eventStream) {
       eventStream.cancel();
@@ -122,31 +113,14 @@ export function logoutFromLichess(): AppThunk {
   };
 }*/
 
-async function authorizedLichessAPICall(
-  path: string,
-  method: 'post' | 'get',
-  accessToken: string,
-  params?: any
-) {
-  const response = await axios(path, {
-    method,
-    baseURL: lichessBaseURL,
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    },
-    params
-  });
-  return response;
-}
-
 // Ignore expireTimestamp, since it doesn't have any impact
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function initializeLichess(params?: {
+export function initialize(params?: {
   access_token: string;
   refresh_token: string;
   expires_in: number;
 }): AppThunk {
-  return async dispatch => {
+  return async (dispatch,getState) => {
     let oauth: OAuth | null = null;
     const currentTime = new Date().getTime();
     if (params) {
@@ -166,48 +140,52 @@ export function initializeLichess(params?: {
         );
         const { username } = response.data;
         const expireTimeStamp = currentTime + expiresIn * 1000;
-
-        set<string>('lichess_accessToken', accessToken);
-        set<string>('lichess_refreshToken', refreshToken);
-        set<number>('lichess_expireTimeStamp', expireTimeStamp);
         oauth = new OAuth(username, accessToken, refreshToken, expireTimeStamp);
+        set('lichess_state', oauth)
+        dispatch({
+          type: GAINED_LICHESS_CREDENTIALS,
+          payload: oauth
+        });
       } catch (err) {
         console.log(err);
         dispatch(logoutFromLichess());
         dispatch(
-          lichessLoginError(
+          createError(
             'OAuth Token invalid!'
           )
         );
       }
     } else {
-      let username;
-      const accessToken = get<string>('lichess_accessToken');
-      const timestamp = get<number>('lichess_expireTimeStamp');
-      let validAccessToken = false;
-      if (accessToken) {
-        try {
-          const response = await authorizedLichessAPICall(
-            '/api/account',
-            'get',
-            accessToken
-          );
-          username = response.data.username;
-          validAccessToken = true;
-        } catch {
+      let oauth = getState().lichess.oauth
+      if (oauth) {
+        let { username, accessToken } = oauth;
+        let validAccessToken = false;
+        if (accessToken) {
+          try {
+            const response = await authorizedLichessAPICall(
+              '/api/account',
+              'get',
+              accessToken
+            );
+            let responseUsername = response.data.username;
+            validAccessToken = true;
+            if (username != responseUsername) {
+              oauth = { ...oauth, username: responseUsername }
+              set('lichess_state', oauth)
+            }
+            dispatch({
+              type: GAINED_LICHESS_CREDENTIALS,
+              payload: oauth
+            });
+          } catch { }
         }
-      }
-      if (validAccessToken /*&& currentTime < timestamp*/) {
-        oauth = new OAuth(
-          username,
-          accessToken,
-          get<string>('lichess_refreshToken'),
-          timestamp
-        );
-      } else {
-        remove('lichess_accessToken');
-        remove('lichess_refreshToken');
-        remove('lichess_expireTimeStamp');
+        if (!validAccessToken /*&& currentTime < timestamp*/) {
+          remove('lichess_state');
+          oauth = null;
+          dispatch({
+            type: LICHESS_CREDENTIALS_REVOKED
+          });
+        }
       }
     }
     if (oauth) {
@@ -217,10 +195,6 @@ export function initializeLichess(params?: {
         () => dispatch(refreshOAuth()),
         nextRefresh
       );*/
-      dispatch({
-        type: GAINED_LICHESS_CREDENTIALS,
-        payload: oauth
-      });
       dispatch(connectToEventStream());
     }
   };
@@ -286,6 +260,9 @@ export function connectToEventStream(): AppThunk {
           reader.read().then(read);
         });
     } catch {
+      dispatch(createError(
+        'Lichess event stream disconnected'
+      ))
       setTimeout(dispatch(connectToEventStream), 30000)
     }
   }

@@ -14,7 +14,7 @@ const PlayerPool = (props: Props) => {
       {!props.connected ? (
         <div className={styles['player-pool-form']}><PlayerPoolForm /></div>
       ) : (
-          <div><button className={styles.button} onClick={props.disconnectFromPlayerPool}>Disconnect</button>
+          <div><div className={styles.button} onClick={props.disconnectFromPlayerPool}>Disconnect</div>
             <table>
               <thead>
               <tr>

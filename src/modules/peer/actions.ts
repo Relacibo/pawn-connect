@@ -8,7 +8,9 @@ import {
   CREATED_PEER,
   DELETED_PEER
 } from './enums/actions';
-import { AppThunk, Dispatch } from '@root/root/types';
+import { AppThunk } from '@root/root/types';
+import { createError } from '../actions';
+import peerjs from '@root/../dev/peerjs';
 
 var peer: Peer | null = null;
 var connections: Map<string, DataConnection> = new Map()
@@ -28,12 +30,12 @@ export function createdPeer(peerId: string) {
 }
 
 export function receivedDataFromPeer(
-  from: string,
+  peerId: string,
   data: any
 ) {
   return {
     type: RECEIVED_DATA_FROM_PEER,
-    payload: { from, payload: data }
+    payload: { peerId, message: data }
   };
 }
 
@@ -99,33 +101,50 @@ async function createPeer(wantedId?: string): Promise<Peer> {
 
 
 export function connectToPeer(peerId: string): AppThunk<Promise<void>> {
-  return async dispatch => {
-    if (!peer) {
-      try {
-        await createPeer();
-      } catch (err) {
-        throw err;
-      }
+  return dispatch => {
+    return new Promise(async (resolve, reject) => {
       if (!peer) {
+        try {
+          await createPeer();
+        } catch (err) {
+          dispatch(createError('Peer server problem. Try again later!'))
+          reject()
+          return;
+        }
+        if (!peer) {
+          reject()
+          return;
+        }
+        dispatch(createdPeer((peer as Peer).id));
+      }
+      if (connections.has(peerId)) {
+        resolve()
         return;
       }
-      dispatch(createdPeer((peer as Peer).id));
-    }
-    const connection = peer.connect(peerId, { reliable: true });
-    dispatch({
-      type: CONNECTING_WITH_PEER,
-      payload: { peerId }
+      const connection = peer.connect(peerId, { reliable: true });
+      dispatch({
+        type: CONNECTING_WITH_PEER,
+        payload: { peerId }
+      });
+      let errorHandle = (err: any) => {
+        console.log('could not connect')
+        switch (err.type) {
+          case 'peer-unavailable': {
+            dispatch(createError('Peer not available!'))
+            peer!.off('error', errorHandle);
+            reject()
+            break;
+          }
+        }
+      }
+      connection.on('open', () => {
+        peer!.off('error', errorHandle);
+        dispatch(onConnection(connection));
+        resolve()
+      });
+      peer.on('error', errorHandle)
     });
-    let errorHandle = (err: any) => {
-      throw err;
-    }
-    connection.on('open', () => {
-      connection.off('error', errorHandle);
-      dispatch(onConnection(connection));
-    });
-    connection.on('error', errorHandle)
   }
-
 }
 
 export function disconnectPeer(): AppThunk {

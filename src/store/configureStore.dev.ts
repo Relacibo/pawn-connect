@@ -1,6 +1,6 @@
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
-import { createHashHistory } from 'history';
+import { createBrowserHistory } from 'history';
 import { routerMiddleware } from 'connected-react-router';
 import { createLogger } from 'redux-logger';
 import createRootReducer from '../root/rootReducer';
@@ -16,7 +16,7 @@ declare global {
   }
 }
 
-const history = createHashHistory();
+const history = createBrowserHistory();
 
 const rootReducer = createRootReducer(history);
 

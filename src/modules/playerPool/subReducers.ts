@@ -16,9 +16,6 @@ export function playerPoolState(state: PlayerPoolState = new PlayerPoolDisconnec
       return new PlayerPoolConnecting(Client(peerId))
     }
     case PLAYER_POOL_SUBSCRIPTION_SUCCESS: {
-      if (state.type != 'connecting') {
-        return state;
-      }
       const { peerId }: { peerId: string } = (action as any).payload;
       return new PlayerPoolConnected(Client(peerId));
     }

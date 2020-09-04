@@ -15,7 +15,7 @@
     "dev": "cross-env NODE_ENV=development node copy-static.js && cross-env PORT=3001 webpack-dev-server --config webpack.config.dev.babel.js"
   },
   "dependencies": {
-    "@types/ndjson": "^2.0.0",
+    "@types/react-toast-notifications": "^2.4.0",
     "axios": "^0.19.2",
     "can-ndjson-stream": "^1.0.2",
     "connected-react-router": "^6.8.0",
@@ -28,13 +28,13 @@
     "http-status-codes": "^1.4.0",
     "immutable": "^4.0.0-rc.12",
     "local-storage": "^2.0.0",
-    "ndjson": "^2.0.0",
     "peerjs": "^1.2.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.0",
     "react-router": "^5.1.2",
     "react-router-dom": "^5.1.2",
+    "react-toast-notifications": "^2.4.0",
     "redux": "^4.0.5",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",

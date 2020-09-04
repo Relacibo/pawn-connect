@@ -2,6 +2,7 @@ import { AppThunk } from "@root/root/types";
 import { sendDataOverPeer, connectPeer, disconnectPeer, connectToPeer } from "../peer/actions";
 import * as Util from "@root/util/util";
 import { DELETE_PLAYER_POOL, CREATE_PLAYER_POOL, CONNECTING_TO_PLAYER_POOL } from "./enums/actions";
+import { createError, createSuccess } from "../actions";
 
 export function initialize(params: any): AppThunk {
   return dispatch => {
@@ -31,7 +32,6 @@ export function hostPlayerPool(): AppThunk {
     try {
       await dispatch(connectPeer(Util.getPeerIDFromLichessID(lichessId)));
     } catch (err) {
-      console.log(err);
       throw err;
     }
     dispatch({ type: CREATE_PLAYER_POOL })
@@ -40,35 +40,41 @@ export function hostPlayerPool(): AppThunk {
 
 export function connectToPlayer(lichessId: string): AppThunk {
   return async (dispatch, getState) => {
-    if (!getState().lichess.oauth) {
+    const oauth = getState().lichess.oauth
+    if (!oauth || lichessId == oauth.username) {
+      dispatch(createError('You cannot use your own lichess username!'))
       return;
     }
     const hostPeerId = Util.getPeerIDFromLichessID(lichessId);
     try {
       await dispatch(connectToPeer(hostPeerId));
+      dispatch(createSuccess('Connected to peer!'))
     } catch (err) {
-      throw err;
+      dispatch(createError('Could not connect to player!'))
     }
-    let myLichessId = getState().lichess.oauth!.username;
     dispatch({
       type: CONNECTING_TO_PLAYER_POOL,
       payload: {
         peerId: hostPeerId
       }
     })
-    dispatch(sendPeerMessage(hostPeerId!, {
+    const myLichessId = oauth.username;
+    dispatch(sendPeerMessage(hostPeerId, {
       type: 'subscribe',
-      lichessId: myLichessId!
+      lichessId: myLichessId
     }))
   }
 }
 
 export function disconnectFromPlayerPool(): AppThunk {
-  return (dispatch, getState) => {
+  return async (dispatch, getState) => {
     const playerPoolState = getState().playerPool.playerPoolState;
     if (playerPoolState.type == 'connected' && playerPoolState.host.isHost) {
       dispatch({ type: DELETE_PLAYER_POOL })
-    } else if (playerPoolState.type != 'disconnected') {
+    } else if (playerPoolState.type != 'disconnected' && !playerPoolState.host.isHost) {
+      dispatch(sendPeerMessage(playerPoolState.host.peerId, {
+        type: 'unsubscribe'
+      }))
       dispatch(disconnectPeer())
       dispatch({ type: DELETE_PLAYER_POOL })
     }
@@ -81,8 +87,8 @@ export function updateClients(): AppThunk {
     if (!playerPoolState || playerPoolState.type != 'connected') {
       return;
     }
-    const peerIds = playerPoolState.members.keySeq().toArray()
-    const lichessIds = playerPoolState.members.valueSeq().map(p => p.lichessId).toArray()
+    const lichessIds = playerPoolState.members.keySeq().toArray()
+    const peerIds = playerPoolState.members.valueSeq().map(p => p.peerId).toArray()
     peerIds.forEach(p => {
       dispatch(sendPeerMessage(p, {
         type: 'update_members',
